@@ -31,23 +31,27 @@ namespace HC.GoPlugin
         public const string ConnectionProtocol = "grpc";
 
         private Server _server;
+        private ServerCredentials _serverCreds;
+        private ServerPort _serverPort;
         private HealthServiceImpl _health;
         private string _ServerCertificate;
         private string _HandshakeInfo;
 
-        public PluginServer(string host, int port, int appProtoVersion,
-            TLSConfig tlsConfig = null)
+        public PluginServer(string listeningHost, int listeningPort, int appProtoVersion,
+            ITLSConfig tlsConfig = null)
         {
-            Host = host;
-            Port = port;
+            ListeningHost = listeningHost;
+            ListeningPort = listeningPort;
             AppProtocolVersion = appProtoVersion;
 
             _server = new Server();
             _health = new HealthServiceImpl();
+            _serverCreds = tlsConfig == null
+                ? ServerCredentials.Insecure
+                : TLSConfig.ToCredentials(tlsConfig);
 
-            var sslCreds = tlsConfig?.ToCredentials();
-            var creds = sslCreds ?? ServerCredentials.Insecure;
-            Server.Ports.Add(new ServerPort(host, port, creds));
+            _serverPort = new ServerPort(ListeningHost, ListeningPort, _serverCreds);
+            Server.Ports.Add(_serverPort);
             Server.Services.Add(Grpc.Health.V1.Health.BindService(_health));
 
             // Based on:
@@ -77,9 +81,9 @@ namespace HC.GoPlugin
             }
         }
 
-        public string Host { get; }
+        public string ListeningHost { get; }
 
-        public int Port { get; }
+        public int ListeningPort { get; }
 
         public int AppProtocolVersion { get; }
 
@@ -89,7 +93,7 @@ namespace HC.GoPlugin
 
         public IHealthService Health => _health;
 
-        public string NetworkAddres => $"{Host}:{Port}";
+        public string NetworkAddres => $"{ListeningHost}:{ListeningPort}";
 
         public string ServerCertificate => _ServerCertificate;
 

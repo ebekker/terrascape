@@ -10,7 +10,7 @@ namespace HC.GoPlugin
     /// Encapsulates server-side (plugin server) certificate details when
     /// the plugin interface needs to support mutual-TLS (MTLS).
     /// </summary>
-    public class TLSConfig
+    public class TLSConfig : ITLSConfig
     {
         /// PEM content representing a CA certificate.
         public string CaCert { get; set; }
@@ -28,15 +28,16 @@ namespace HC.GoPlugin
         /// Transforms the PKI components captured in this <c>TLSConfig</c> instance into a
         /// server credential object that can be used with a gRPC service endpoint (server port).
         /// </summary>
-        public SslServerCredentials ToCredentials(bool authenticateClient = false)
+        public static SslServerCredentials ToCredentials(ITLSConfig tls,
+            bool authenticateClient = false)
         {
             if (authenticateClient)
             {
                 return new SslServerCredentials(
                     new List<KeyCertificatePair>() {
-                        new KeyCertificatePair(ServerCert, ServerKey)
+                        new KeyCertificatePair(tls.ServerCert, tls.ServerKey)
                     },
-                    rootCertificates: CaCert,
+                    rootCertificates: tls.CaCert,
                     forceClientAuth: false
                 );
             }
@@ -44,7 +45,7 @@ namespace HC.GoPlugin
             {
                 return new SslServerCredentials(
                     new List<KeyCertificatePair>() {
-                        new KeyCertificatePair(ServerCert, ServerKey)
+                        new KeyCertificatePair(tls.ServerCert, tls.ServerKey)
                     }
                 );
             }
@@ -54,7 +55,7 @@ namespace HC.GoPlugin
         /// Convenience routine to build a <c>TLSConfig</c> instance from
         /// file paths to PEM files for each of the PKI components.
         /// </summary>
-        public static TLSConfig FromFiles(string caCertPath,
+        public static ITLSConfig FromFiles(string caCertPath,
             string serverKeyPath, string serverCertPath,
             bool asmRelative = false)
         {
