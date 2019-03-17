@@ -2,7 +2,7 @@
 
 This project provides a library with some convenience wrappers and
 logic for implementing a basic plugin in C#/.NET compatible with the
-`[go-plugin](https://github.com/hashicorp/go-plugin)` system over RPC.
+[`go-plugin`](https://github.com/hashicorp/go-plugin) system over RPC.
 
 ## Building
 
