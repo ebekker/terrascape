@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using Tfplugin5;
 
 namespace HC.TFPlugin
 {
@@ -21,6 +22,23 @@ namespace HC.TFPlugin
         public static ILogger Create(string name) => LoggerFactory.CreateLogger(name);
         public static ILogger Create(Type type) => LoggerFactory.CreateLogger(type);
         public static ILogger Create<T>() => LoggerFactory.CreateLogger<T>();
+
+        // // static object DestructureDynamicValue(DynamicValue dv)
+        // // {
+        // //     string json = null;
+        // //     if (dv.Json != null)
+        // //     {
+        // //         json = dv.Json.ToStringUtf8();
+        // //     }
+
+        // //     string msgpack = null;
+        // //     if (dv.Msgpack != null)
+        // //     {
+        // //         msgpack = dv.Msgpack.ToStringUtf8();
+        // //     }
+
+        // //     return JsonConvert.SerializeObject(new { json, msgpack });
+        // // }
     }
 }
 
@@ -37,14 +55,15 @@ namespace HC.TFPlugin
             var libPath = Assembly.GetEntryAssembly().Location;
             var libDir = Path.GetDirectoryName(libPath);
             var libName = Path.GetFileNameWithoutExtension(libPath);
-          //var logPath = Path.Combine(libDir, $"{libName}-serilog.txt");
-            var logPath = Path.Combine(curDir, $"{libName}-serilog.txt");
+          //var logPath = Path.Combine(libDir, $"{libName}-serilog.log");
+            var logPath = Path.Combine(curDir, $"{libName}-serilog.log");
 
             var outputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}";
 
             LoggerFactory.AddSerilog(
                 new Serilog.LoggerConfiguration()
                     .Enrich.FromLogContext()
+                    // // .Destructure.ByTransforming<DynamicValue>(DestructureDynamicValue)
                     .MinimumLevel.Verbose()
                     .WriteTo.File(logPath
                         //,restrictedToMinimumLevel: LogEventLevel.Verbose)
