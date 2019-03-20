@@ -23,19 +23,35 @@ namespace Terrascape.AcmeProvider
         /// The URL to the ACME endpoint's directory.
         /// </summary>
         /// <value></value>
-        [TFAttribute("server_url", Required = true)]
+        [TFArgument("server_url", Required = true)]
         public string ServerUrl { get; set; }
 
-        public void Configure()
+        public ConfigureResult Configure(ConfigureInput input)
         {
-            _log.LogInformation("Configuring...");
-            _log.LogInformation($"  * [{nameof(ServerUrl)}]=[{ServerUrl}]");
+            _log.LogDebug("{method}: ", nameof(Configure));
+            _log.LogTrace("->input = {@input}", input);
+            _log.LogTrace("->state = {@state}", this);
+
+            // TODO: configure and return any validation errors
+            var result = new ConfigureResult();
+
+            _log.LogTrace("<-state = {@state}", this);
+            _log.LogTrace("<-result = {@result}", result);
+            return result;
         }
 
-        public void PrepareConfig()
+        public PrepareProviderConfigResult PrepareConfig(PrepareProviderConfigInput input)
         {
-            _log.LogInformation("NOTE: AcmeProvider Preparing Config...");
-            _log.LogInformation($"  * [{nameof(ServerUrl)}]=[{ServerUrl}]");
+            _log.LogDebug("{method}: ", nameof(PrepareConfig));
+            _log.LogTrace("->input = {@input}", input);
+            _log.LogTrace("->state = {@state}", this);
+
+            // TODO: configure and return any validation errors
+            var result = new PrepareProviderConfigResult();
+
+            _log.LogTrace("<-state = {@state}", this);
+            _log.LogTrace("<-result = {@result}", this);
+            return result;
         }
     }
 }

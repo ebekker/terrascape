@@ -20,7 +20,7 @@ namespace Terrascape.AcmeProvider
         /** Argument Reference **/
 
         /// Private key of the account that is requesting the certificate.
-        [TFAttribute("account_key_pem",
+        [TFArgument("account_key_pem",
             Required = true,
             ForceNew = true,
             Sensitive = true)]
@@ -28,7 +28,7 @@ namespace Terrascape.AcmeProvider
 
         /// Certificate's common name, the primary domain that the certificate
         /// will be recognized for. Required when not specifying a CSR.
-        [TFAttribute("common_name",
+        [TFArgument("common_name",
             Optional = true,
             ForceNew = true,
             ConflictsWith = new[] { nameof(CertificateRequestPem) })]
@@ -36,7 +36,7 @@ namespace Terrascape.AcmeProvider
 
         /// Certificate's subject alternative names, domains that this certificate
         /// will also be recognized for. Only valid when not specifying a CSR.
-        [TFAttribute("subject_alternative_names",
+        [TFArgument("subject_alternative_names",
             Optional = true,
             ForceNew = true,
             ConflictsWith = new[] { nameof(CertificateRequestPem) })]
@@ -50,7 +50,7 @@ namespace Terrascape.AcmeProvider
         /// or 2048, 4096, and 8192 (for RSA keys of respective length). Required
         /// when not specifying a CSR. The default is 2048 (RSA key of 2048 bits).
         /// </remarks>
-        [TFAttribute("key_type",
+        [TFArgument("key_type",
             Optional = true,
             ForceNew = true,
             ConflictsWith = new[] { nameof(CertificateRequestPem) })]
@@ -78,7 +78,7 @@ namespace Terrascape.AcmeProvider
         /// or one from an external source, in PEM format. Either this, or the
         /// in-resource request options (<c>common_name</c>, <c>key_type</c>,
         /// and optionally <c>subject_alternative_names</c>) need to be specified.
-        [TFAttribute("certificate_request_pem",
+        [TFArgument("certificate_request_pem",
             Optional = true,
             ForceNew = true,
             ConflictsWith = new[] {
@@ -91,14 +91,15 @@ namespace Terrascape.AcmeProvider
         /// Minimum amount of days remaining on the expiration of a certificate before
         /// a renewal is attempted. The default is 7. A value of less than 0 means that
         /// the certificate will never be renewed.
-        [TFAttribute("min_days_remaining",
+        [TFArgument("min_days_remaining",
             Optional = true)]
         public int MinDaysRemaining { get; set; } = 7;
 
         /// File path where the challenge response to an <c>http-01</c> challenge
-        /// will be written.  Tjhis would typically be the root path of a web site
+        /// will be written.  This would typically be the root path of a web site
         /// folder that will be responding to the ACME challenge.
-        [TFAttribute("challenge_response_path")]
+        [TFArgument("challenge_response_path",
+            Required = true)]
         public string ChallengeResponsePath { get; set; }
 
 /*
@@ -109,38 +110,33 @@ NOTE: OCSP stapling requires specific webserver configuration to support the dow
         /** Attribute Reference **/
 
         /// Full URL of the certificate within the ACME CA. Same as id.
-        [TFAttribute("certificate_url",
-            Computed = true)]
+        [TFComputed("certificate_url")]
         public string CertificateUrl { get; set; }
 
         /// Common name of the certificate.
-        [TFAttribute("certificate_domain",
-            Computed = true)]
+        [TFComputed("certificate_domain")]
         public string CertificateDomain { get; set; }
 
         /// Certificate's private key, in PEM format, if the certificate was generated
         /// from scratch and not with certificate_request_pem. If certificate_request_pem
         /// was used, this will be blank.
-        [TFAttribute("private_key_pem",
-            Computed = true,
+        [TFComputed("private_key_pem",
             Sensitive = true)]
         public string PrivateKeyPem { get; set; }
 
         /// Certificate in PEM format.
-        [TFAttribute("certificate_pem",
-            Computed = true)]
+        [TFComputed("certificate_pem")]
         public string CertificatePem { get; set; }
 
         /// Intermediate certificate of the issuer.
-        [TFAttribute("issuer_pem",
-            Computed = true)]
+        [TFComputed("issuer_pem")]
         public string IssuerPem { get; set; }
 
         /// Password to be used to secure the PKCS12 (PFX) archive content
         /// made available in the <c>certificate_p12</c> attribute.  If
         /// empty or unspecified, the PKCS12 archive will not be protected
         /// with a password.
-        [TFAttribute("certificate_p12_password",
+        [TFArgument("certificate_p12_password",
             Optional = true,
             Sensitive = true)]
         public string CertificateP12Password { get; set; }
@@ -150,8 +146,7 @@ NOTE: OCSP stapling requires specific webserver configuration to support the dow
         /// data is base64 encoded and has no password unless one was specified
         /// with the <c>certificate_p12_password</c> argument.
         /// This field is empty if creating a certificate from a CSR.
-        [TFAttribute("certificate_p12",
-            Computed = true,
+        [TFComputed("certificate_p12",
             Sensitive = true)]
         public string CertificateP12 { get; set; }
 /*

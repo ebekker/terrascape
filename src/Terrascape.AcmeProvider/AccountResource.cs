@@ -20,7 +20,7 @@ namespace Terrascape.AcmeProvider
         /// <summary>
         /// The private key used to identity the account.
         /// </summary>
-        [TFAttribute("account_key_pem",
+        [TFArgument("account_key_pem",
             Required = true,
             ForceNew = true,
             Sensitive = true)]
@@ -29,7 +29,7 @@ namespace Terrascape.AcmeProvider
         /// <summary>
         /// The contact email address for the account.
         /// </summary>
-        [TFAttribute("email_address",
+        [TFArgument("email_address",
             Required = true,
             ForceNew = true)]
         public string EmailAddress { get; set ;}
@@ -37,13 +37,13 @@ namespace Terrascape.AcmeProvider
         /// <summary>
         /// The original full URL of the account.
         /// </summary>
-        [TFAttribute("id")]
+        [TFComputed("id")]
         public string Id { get; set; }
 
         /// <summary>
         /// The current full URL of the account.
         /// </summary>
-        [TFAttribute("registration_url", Computed = true)]
+        [TFComputed("registration_url")]
         public string RegistrationUrl { get; set; }
 
         public Task CreateAsync() => Task.CompletedTask;
