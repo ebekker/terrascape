@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -15,6 +16,52 @@ using ProtoSchema = Tfplugin5.Schema;
 
 namespace HC.TFPlugin
 {
+    public class TFSteps
+    {
+        private List<Step> _steps = new List<Step>();
+
+        public AttributePath ToPath() => new AttributePath { Steps = { _steps } };
+
+        public TFSteps Attribute(string name) => Add(new Step { AttributeName = name });
+
+        public TFSteps Element(long index) => Add(new Step { ElementKeyInt = index });
+
+        public TFSteps Element(string name) => Add(new Step { ElementKeyString = name });
+
+        protected TFSteps Add(Step step)
+        {
+            _steps.Add(step);
+            return this;
+        }
+    }
+
+    public class TFAttributePaths : IEnumerable<TFSteps>
+    {
+        private List<TFSteps> _paths = new List<TFSteps>();
+
+        public IEnumerable<TFSteps> All => _paths;
+
+        public IEnumerable<AttributePath> ToPaths() => ToPaths(_paths);
+
+        public static IEnumerable<AttributePath> ToPaths(IEnumerable<TFSteps> steps) =>
+            steps.Select(s => s.ToPath());
+
+        public TFAttributePaths Add(TFSteps steps)
+        {
+            _paths.Add(steps);
+            return this;
+        }
+
+        public IEnumerator<TFSteps> GetEnumerator() => _paths.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => _paths.GetEnumerator();
+    }
+
+
+    // References:
+    //  https://github.com/hashicorp/terraform/blob/eb1346447fc635b5dea8e31112de129bf5dedfb4/providers/provider.go
+    //  https://github.com/hashicorp/terraform/blob/6317d529a9194a7d2d27e80f7f855d381eeffd8a/builtin/providers/terraform/provider.go
+
     public partial class ProviderImpl : Tfplugin5.Provider.ProviderBase
     {
         private ILogger _log = LogUtil.Create<ProviderImpl>();
@@ -28,62 +75,33 @@ namespace HC.TFPlugin
 
         public Assembly PluginAssembly { get; }
 
-        public override Task<Tfplugin5.GetProviderSchema.Types.Response> GetSchema(
-            Tfplugin5.GetProviderSchema.Types.Request request, ServerCallContext context)
-        {
-            _log.LogDebug("Called [GetSchema]");
+        // public override async Task<Tfplugin5.PrepareProviderConfig.Types.Response> PrepareProviderConfig(
+        //     Tfplugin5.PrepareProviderConfig.Types.Request request, ServerCallContext context)
+        // {
+        //     _log.LogInformation("Called [PrepareProviderConfig]");
+        //     _log.LogInformation($"  * Config = [{Dump(request.Config)}]");
+        //     // _log.LogInformation($"  request.Config = [{JsonConvert.SerializeObject(request.Config.Msgpack.ToStringUtf8(), Formatting.Indented)}]");
 
-            try
-            {
-                var response = new Tfplugin5.GetProviderSchema.Types.Response();
-                response.Provider = SchemaHelper.GetProviderSchema(PluginAssembly);
-                response.DataSourceSchemas.Add(SchemaHelper.GetDataSourceSchemas());
-                response.ResourceSchemas.Add(SchemaHelper.GetResourceSchemas());
-                
-                // _log.LogInformation($"  DataSources: [{response.DataSourceSchemas.Count}]");
-                // _log.LogInformation($"  Resources: [{response.ResourceSchemas.Count}]");
+        //     var response = new Tfplugin5.PrepareProviderConfig.Types.Response();
+        //     (_providerInstance, response.PreparedConfig) = ProviderHelper.PrepareProviderConfig(
+        //         request.Config, PluginAssembly);
 
-                foreach (var rs in response.ResourceSchemas)
-                {
-                    _log.LogInformation($"    [{rs.Key}]=[{rs.Value.Version}][{string.Join(",", rs.Value.Block.Attributes)}]");
-                }
+        //     return await Task.FromResult(response);
+        // }
 
-                return Task.FromResult(response);
-            }
-            catch (Exception ex)
-            {
-                _log.LogInformation("ERROR: " + ex);
-                throw;
-            }
-        }
+        // public override async Task<Tfplugin5.ValidateResourceTypeConfig.Types.Response> ValidateResourceTypeConfig(
+        //     Tfplugin5.ValidateResourceTypeConfig.Types.Request request, ServerCallContext context)
+        // {
+        //     _log.LogInformation("Called [ValidateResourceTypeConfig]");
+        //     _log.LogInformation($"  * TypeName = [{request.TypeName}]");
+        //     _log.LogInformation($"  * Config   = [{Dump(request.Config)}]");
 
-        public override async Task<Tfplugin5.PrepareProviderConfig.Types.Response> PrepareProviderConfig(
-            Tfplugin5.PrepareProviderConfig.Types.Request request, ServerCallContext context)
-        {
-            _log.LogInformation("Called [PrepareProviderConfig]");
-            _log.LogInformation($"  * Config = [{Dump(request.Config)}]");
-            // _log.LogInformation($"  request.Config = [{JsonConvert.SerializeObject(request.Config.Msgpack.ToStringUtf8(), Formatting.Indented)}]");
+        //     var response = new Tfplugin5.ValidateResourceTypeConfig.Types.Response();
+        //     ProviderHelper.ValidateResourceTypeConfig(_providerInstance, request.TypeName,
+        //         request.Config, PluginAssembly);
 
-            var response = new Tfplugin5.PrepareProviderConfig.Types.Response();
-            (_providerInstance, response.PreparedConfig) = ProviderHelper.PrepareProviderConfig(
-                request.Config, PluginAssembly);
-
-            return await Task.FromResult(response);
-        }
-
-        public override async Task<Tfplugin5.ValidateResourceTypeConfig.Types.Response> ValidateResourceTypeConfig(
-            Tfplugin5.ValidateResourceTypeConfig.Types.Request request, ServerCallContext context)
-        {
-            _log.LogInformation("Called [ValidateResourceTypeConfig]");
-            _log.LogInformation($"  * TypeName = [{request.TypeName}]");
-            _log.LogInformation($"  * Config   = [{Dump(request.Config)}]");
-
-            var response = new Tfplugin5.ValidateResourceTypeConfig.Types.Response();
-            ProviderHelper.ValidateResourceTypeConfig(_providerInstance, request.TypeName,
-                request.Config, PluginAssembly);
-
-            return await Task.FromResult(response);
-        }
+        //     return await Task.FromResult(response);
+        // }
 
         public override async Task<Tfplugin5.ValidateDataSourceConfig.Types.Response> ValidateDataSourceConfig(
             Tfplugin5.ValidateDataSourceConfig.Types.Request request, ServerCallContext context)
@@ -97,28 +115,17 @@ namespace HC.TFPlugin
             return await Task.FromResult(response);
         }
 
-        public override async Task<Tfplugin5.Configure.Types.Response> Configure(
-            Tfplugin5.Configure.Types.Request request, ServerCallContext context)
-        {
-            _log.LogInformation("Called [Configure]");
-            _log.LogInformation($"  * TerraformVersion = [{request.TerraformVersion}]");
-            _log.LogInformation($"  * Config           = [{Dump(request.Config)}]");
+        // public override async Task<Tfplugin5.UpgradeResourceState.Types.Response> UpgradeResourceState(
+        //     Tfplugin5.UpgradeResourceState.Types.Request request, ServerCallContext context)
+        // {
+        //     _log.LogInformation("*****************************");
+        //     _log.LogInformation("Called [UpgradeResourceState]");
+        //     _log.LogInformation("*****************************");
 
-            var response = new Tfplugin5.Configure.Types.Response();
-            _providerInstance = ProviderHelper.Configure(request.Config, PluginAssembly);
+        //     var response = new Tfplugin5.UpgradeResourceState.Types.Response();
 
-            return await Task.FromResult(response);
-        }
-
-        public override async Task<Tfplugin5.UpgradeResourceState.Types.Response> UpgradeResourceState(
-            Tfplugin5.UpgradeResourceState.Types.Request request, ServerCallContext context)
-        {
-            _log.LogInformation("Called [UpgradeResourceState]");
-
-            var response = new Tfplugin5.UpgradeResourceState.Types.Response();
-
-            return await Task.FromResult(response);
-        }
+        //     return await Task.FromResult(response);
+        // }
 
         // public override async Task<Tfplugin5.ReadResource.Types.Response> ReadResource(
         //     Tfplugin5.ReadResource.Types.Request request, ServerCallContext context)
@@ -151,15 +158,17 @@ namespace HC.TFPlugin
         //     return await Task.FromResult(response);
         // }
 
-        public override async Task<Tfplugin5.ImportResourceState.Types.Response> ImportResourceState(
-            Tfplugin5.ImportResourceState.Types.Request request, ServerCallContext context)
-        {
-            _log.LogInformation("Called [ImportResourceState]");
+        // public override async Task<Tfplugin5.ImportResourceState.Types.Response> ImportResourceState(
+        //     Tfplugin5.ImportResourceState.Types.Request request, ServerCallContext context)
+        // {
+        //     _log.LogInformation("Called [ImportResourceState]");
 
-            var response = new Tfplugin5.ImportResourceState.Types.Response();
+        //     var response = new Tfplugin5.ImportResourceState.Types.Response();
 
-            return await Task.FromResult(response);
-        }
+        //     response.ImportedResources.Add(new ImportResourceState.Types.ImportedResource().
+
+        //     return await Task.FromResult(response);
+        // }
 
         public static string Dump(DynamicValue dv)
         {
@@ -207,7 +216,7 @@ namespace HC.TFPlugin
                 if (request.TypeName == "lo_sys_info")
                 {
                     //var inp = Cty.MsgpackHelper.Unmarshal<SysInfoInput>(request.Config);
-                    var inp = DVHelper.Unmarshal<SysInfoInput>(request.Config);
+                    var inp = DynamicValue.Unmarshal<SysInfoInput>(request.Config);
                     _log.LogInformation("  Got Input:  " + JsonConvert.SerializeObject(inp));
                     var outp = new SysInfoOutput
                     {
@@ -226,7 +235,7 @@ namespace HC.TFPlugin
                     // response.State = Cty.MsgpackHelper.MarshalDynamicValue<object>(null);
                     // response.State = Cty.MsgpackHelper.MarshalDynamicValue(new Dictionary<string, string>()); //new DynamicValue();
                     // response.State = Cty.MsgpackHelper.MarshalDynamicValue(outp);
-                    response.State = DVHelper.Marshal(outp);
+                    response.State = DynamicValue.Marshal(outp);
                     //response.State = request.Config;
 
                     _log.LogInformation("  Output = " + JsonConvert.SerializeObject(outp));
