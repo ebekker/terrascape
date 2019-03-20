@@ -6,8 +6,16 @@ using Tfplugin5;
 
 namespace HC.TFPlugin
 {
-    public class DVHelper
+    // Special Support for go-cty "Unknown Values":
+    //  https://github.com/zclconf/go-cty/blob/master/cty/msgpack/doc.go
+    //  https://github.com/zclconf/go-cty/blob/master/cty/msgpack/unknown.go
+
+
+    public static partial class DynamicValueExtensions
     {
+        // https://github.com/zclconf/go-cty/blob/master/cty/msgpack/unknown.go
+        private static readonly byte[] UnknownValBytes = new byte[] { 0xd4, 0, 0 };
+
         // These are kinda inefficient -- the use JSON encoding as an
         // intermediary between MsgPack and native objects for both
         // serializing and deserializing because that gives us a way
@@ -37,19 +45,19 @@ namespace HC.TFPlugin
 
 
 
-        public static T Unmarshal<T>(DynamicValue dv, T def = default) =>
+        public static T UnmarshalViaMessagePack<T>(DynamicValue dv, T def = default) =>
             DeserializeMsgPack<T>(dv.Msgpack.ToByteArray());
 
-        public static object Unmarshal(Type t, DynamicValue dv) =>
+        public static object UnmarshalViaMessagePack(Type t, DynamicValue dv) =>
             DeserializeMsgPack(t, dv.Msgpack.ToByteArray());
 
-        public static DynamicValue Marshal<T>(T value) =>
+        public static DynamicValue MarshalViaMessagePack<T>(T value) =>
             new DynamicValue
             {
                 Msgpack = ByteString.CopyFrom(SerializeMsgPack(value)),
             };
 
-        public static DynamicValue Marshal(Type t, object value) =>
+        public static DynamicValue MarshalViaMessagePack(Type t, object value) =>
             new DynamicValue
             {
                 Msgpack = ByteString.CopyFrom(SerializeMsgPack(t, value)),
