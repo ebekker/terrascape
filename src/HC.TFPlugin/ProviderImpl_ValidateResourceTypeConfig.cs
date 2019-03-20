@@ -1,65 +1,65 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Google.Protobuf;
 using Grpc.Core;
 using HC.TFPlugin.Attributes;
 using HC.TFPlugin.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Tfplugin5;
-using static Tfplugin5.AttributePath.Types;
-using static Tfplugin5.AttributePath.Types.Step;
 
 namespace HC.TFPlugin
 {
-    public class ReadResourceInput<T>
+    public class ValidateResourceTypeConfigInput<T>
     {
-        public T CurrentState { get; set; }
+        public T Config { get; set; }
     }
 
-    public class ReadResourceResult<T> : IHasDiagnostics
+    public class ValidateResourceTypeConfigResult<T> : IHasDiagnostics
     {
         public TFDiagnostics Diagnostics { get; set; }
-        public T NewState { get; set; }
     }
 
-    public interface IHasReadResource<T>
+    public interface IHasValidateResourceTypeConfig<T>
     {
-        ReadResourceResult<T> Read(ReadResourceInput<T> input);
+        ValidateResourceTypeConfigResult<T> ValidateConfig(ValidateResourceTypeConfigInput<T> input);
     }
 
     public partial class ProviderImpl
     {
-        public override async Task<Tfplugin5.ReadResource.Types.Response> ReadResource(
-            Tfplugin5.ReadResource.Types.Request request, ServerCallContext context)
+        public override async Task<Tfplugin5.ValidateResourceTypeConfig.Types.Response> ValidateResourceTypeConfig(
+            Tfplugin5.ValidateResourceTypeConfig.Types.Request request, ServerCallContext context)
         {
-            _log.LogDebug(">>>{method}>>>", nameof(ReadResource));
+            _log.LogDebug(">>>{method}>>>", nameof(ValidateResourceTypeConfig));
             _log.LogTrace($"->input[{nameof(request)}] = {{@request}}", request);
             _log.LogTrace($"->input[{nameof(context)}] = {{@context}}", context);
 
             try
             {
-                var response = new Tfplugin5.ReadResource.Types.Response();
+                if (_providerInstance == null)
+                    throw new Exception("provider instance was not configured previously");
+
+                var response = new Tfplugin5.ValidateResourceTypeConfig.Types.Response();
+                // ProviderHelper.ValidateResourceTypeConfig(_providerInstance, request.TypeName,
+                //     request.Config, PluginAssembly);
 
                 var plugin = SchemaHelper.GetPluginDetails(PluginAssembly);
                 var resType = plugin.Resources.Where(x =>
                     request.TypeName == x.GetCustomAttribute<TFResourceAttribute>()?.Name).First();
-                var invokeType = typeof(IHasReadResource<>).MakeGenericType(resType);
+                var invokeType = typeof(IHasValidateResourceTypeConfig<>).MakeGenericType(resType);
                 if (invokeType.IsAssignableFrom(plugin.Provider))
                 {
-                    var invokeInputType = typeof(ReadResourceInput<>).MakeGenericType(resType);
-                    var invokeResultType = typeof(ReadResourceResult<>).MakeGenericType(resType);
+                    var invokeInputType = typeof(ValidateResourceTypeConfigInput<>).MakeGenericType(resType);
+                    var invokeResultType = typeof(ValidateResourceTypeConfigResult<>).MakeGenericType(resType);
 
                     // Construct and populate the input type instance from the request
                     var invokeInput = Activator.CreateInstance(invokeInputType);
 
-                    invokeInputType.GetProperty(nameof(request.CurrentState)).SetValue(invokeInput,
-                        DynamicValue.Unmarshal(resType, request.CurrentState));
+                    invokeInputType.GetProperty(nameof(request.Config)).SetValue(invokeInput,
+                        DynamicValue.Unmarshal(resType, request.Config));
 
                     // Invoke the functional method
-                    var invokeMethod = invokeType.GetMethod(nameof(IHasReadResource<object>.Read));
+                    var invokeMethod = invokeType.GetMethod(nameof(IHasValidateResourceTypeConfig<object>.ValidateConfig));
                     var invokeResult = invokeMethod.Invoke(_providerInstance, new[] { invokeInput });
                     if (invokeResult == null)
                         throw new Exception("invocation result returned null");
@@ -71,13 +71,8 @@ namespace HC.TFPlugin
                         .GetValue(invokeResult));
                     if (diagnostics.Count() > 0)
                         response.Diagnostics.Add(diagnostics.All());
-
-                    var newState = invokeResultType.GetProperty(nameof(response.NewState))
-                            .GetValue(invokeResult);
-                    if (newState != null)
-                        response.NewState = DynamicValue.Marshal(resType, newState);
                 }
-
+ 
                 _log.LogTrace("<-result = {@response}", response);
                 return await Task.FromResult(response);
             }
