@@ -1,20 +1,21 @@
 using System;
+using System.Reflection;
 
 namespace HC.TFPlugin.Attributes
 {
-    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public sealed class TFAttributeAttribute : Attribute
+    public abstract class TFAttributeAttribute : Attribute
     {
-        public TFAttributeAttribute(string name)
+        public TFAttributeAttribute(string name, bool computed)
         {
             Name = name;
+            Computed = computed;
         }
         
         public string Name { get; }
 
-        public string Description { get; set; }
+        public bool Computed { get; }
 
-        public bool Computed { get; set; }
+        public string Description { get; set; }
 
         public bool Optional { get; set; }
 
@@ -28,5 +29,8 @@ namespace HC.TFPlugin.Attributes
 
         // Type is inferred from the Property type
         //public ByteString Type { get; set; }
+
+        public static TFAttributeAttribute Get<T>(string propName) =>
+            typeof(T).GetProperty(propName)?.GetCustomAttribute<TFAttributeAttribute>();
     }
 }
