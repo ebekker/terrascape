@@ -24,6 +24,9 @@ namespace Terrascape.AcmeProvider
             _log = LogUtil.Create<Program>();
             _log.LogInformation("========================================================================");
             _log.LogInformation("Starting up...");
+            var tscapeSession = Environment.GetEnvironmentVariable("TSCAPE_SESSION_START");
+            if (!string.IsNullOrEmpty(tscapeSession))
+                _log.LogInformation($"TSCAPE Session Start: {tscapeSession}");
 
             try
             {
