@@ -69,7 +69,6 @@ namespace HC.TFPlugin
 
         public static Schema AddAttributes(this Schema schema, Type t)
         {
-//Dumper.Out.WriteLine($"  Adding attributes for [{t.FullName}]");
             if (schema.Block == null)
                 schema.Block = new Schema.Types.Block();
             foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance))
@@ -77,8 +76,6 @@ namespace HC.TFPlugin
                 var attrAttr = p.GetCustomAttribute<TFAttributeAttribute>();
                 if (attrAttr == null)
                     continue;
-
-//Dumper.Out.WriteLine($"  Adding attribute[{attrAttr.Name}]");
 
                 schema.Block.Attributes.Add(new Schema.Types.Attribute
                 {

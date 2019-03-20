@@ -9,8 +9,10 @@ namespace HC.TFPlugin
     {
         // Derived from:
         //  https://github.com/hashicorp/terraform/blob/4de0b33097bd599fca83b0e9a8c7bb5987c2ceab/helper/schema/core_schema.go#L176
+        //  https://github.com/hashicorp/terraform/blob/master/helper/schema/valuetype.go
+        //  https://github.com/hashicorp/terraform/blob/master/helper/schema/schema.go
 
-        public static readonly ByteString TypeDynamic = ByteString.CopyFromUtf8(@"dynamic");
+        public static readonly ByteString TypeDynamic = ByteString.CopyFromUtf8(@"""dynamic""");
         public static readonly ByteString TypeBool = ByteString.CopyFromUtf8(@"""bool""");
         public static readonly ByteString TypeNumber = ByteString.CopyFromUtf8(@"""number""");
         public static readonly ByteString TypeInt = ByteString.CopyFromUtf8(@"""number""");//(@"""int""");
@@ -25,6 +27,9 @@ namespace HC.TFPlugin
 
         public static ByteString From(Type t)
         {
+            if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Computed<>))
+                return From(t.GetGenericArguments()[0]);
+
             if (typeof(bool) == t)
                 return TypeBool;
 

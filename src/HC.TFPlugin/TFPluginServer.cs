@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading.Tasks;
 using HC.GoPlugin;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace HC.TFPlugin
@@ -16,6 +17,8 @@ namespace HC.TFPlugin
         // https://github.com/hashicorp/terraform/blob/master/plugin/serve.go#L35
         public const string HandshakeMagicCookieName = "TF_PLUGIN_MAGIC_COOKIE";
         public const string HandshakeMagicCookieValue = "d602bf8f470bc67ca7faa0386276bbdd4330efaf76d1a219cb4d6991ca9872b2";
+
+        private static ILogger _log = LogUtil.Create<TFPluginServer>();
 
         // https://github.com/hashicorp/terraform/blob/v0.12.0-beta1/plugin/serve.go#L16
         //private static int _appProtoVersion = 4; // TF 0.11
@@ -44,7 +47,9 @@ namespace HC.TFPlugin
 
             _tls = TLSConfigSimple.GenerateSelfSignedRSA();
 
-            Dumper.Out.WriteLine($"listen ports: {minPort}-{maxPort} : {_listenPort}");
+            _log.LogInformation("listen host: {@listenHost}", _listenHost);
+            _log.LogInformation("listen ports: {@minPort}-{@maxPort} : {@listenPort}",
+                minPort, maxPort, _listenPort);
 
             var server = new PluginServer(_listenHost, _listenPort, _appProtoVersion, _tls);
             var provider = new ProviderImpl(pluginAssembly);
