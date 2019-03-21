@@ -44,9 +44,19 @@ provider "acmelo" {
 #     email_address = "FOO"
 # }
 
+
 resource "acmelo_file" "temp1" {
     path = "${path.module}/test1.txt"
+
+    compute_checksum = "md5"
+    # compute_checksum = "sha1"
+    # compute_checksum = "sha256"
+    # compute_checksum = "sc_hash"
+
+    # content          = "THIS IS A TEST FROM TF"
+    content_path = "./source1.txt"
 }
+
 # resource "acmelo_file" "temp2" {
 #     path = "${path.module}/test2.txt"
 # }
