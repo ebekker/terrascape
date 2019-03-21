@@ -29,8 +29,15 @@ namespace HC.TFPlugin
 
         private static ITLSConfig _tls;
 
-        public static async Task<PluginServer> BuildServer(Assembly pluginAssembly = null)
+        public static async Task<PluginServer> RunService(Assembly pluginAssembly = null)
         {
+            var tfRunId = Environment.GetEnvironmentVariable("TF_RUN_ID");
+
+            _log.LogInformation("###############################################################");
+            _log.LogInformation("TF Plugin Server Starting up...");
+            if (!string.IsNullOrEmpty(tfRunId))
+                _log.LogInformation($"TF Run ID: {tfRunId}");
+
             var magic = System.Environment.GetEnvironmentVariable(HandshakeMagicCookieName);
             if (HandshakeMagicCookieValue != magic)
                 throw new Exception("plugin should only be invoked by host");
@@ -62,8 +69,12 @@ namespace HC.TFPlugin
             Console.WriteLine("Hit a key to exit...");
             Console.ReadKey();
             Console.WriteLine("...shutting down...");
+            _log.LogInformation("Shutting down...");
 
             await server.ShutdownAsync();
+
+            _log.LogInformation("Stopped.");
+            _log.LogInformation("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
             return server;
         }
