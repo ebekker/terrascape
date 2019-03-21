@@ -2,12 +2,13 @@
 [CmdletBinding(DefaultParameterSetName="Default")]
 param(
     [string]$Project=$PWD,
-    [string]$Configuration="Release",
 
     [Parameter(ParameterSetName="Copy", Mandatory)]
     [switch]$CopyToPluginsFolder,
     [Parameter(ParameterSetName="Copy")]
-    [string]$TargetPluginsFolder=$null
+    [string]$TargetPluginsFolder=$null,
+
+    [string]$Configuration="Release"
 )
 
 $projectFile = [System.IO.Path]::Combine($PWD, $Project)
