@@ -8,11 +8,10 @@ using HC.TFPlugin.Attributes;
 using HC.TFPlugin.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Terrascape.AcmeProvider;
 
-namespace Terrascape.AcmeProvider
+namespace Terrascape.LocalProvider
 {
-    public partial class AcmeProvider :
+    public partial class LocalProvider :
         IHasValidateResourceTypeConfig<FileResource>,
         IHasPlanResourceChange<FileResource>,
         IHasApplyResourceChange<FileResource>,
@@ -107,8 +106,8 @@ namespace Terrascape.AcmeProvider
                     || input.Config.ComputeChecksum != input.PriorState.ComputeChecksum)
                 {
                     _log.LogDebug("Reseting Checksum, to be computed ({prior} -> {config})",
-                        input.PriorState.ComputeChecksum,
-                        input.Config.ComputeChecksum);
+                        input.PriorState?.ComputeChecksum,
+                        input.Config?.ComputeChecksum);
                     result.PlannedState.Checksum = null;
                 }
                 else
@@ -132,10 +131,11 @@ namespace Terrascape.AcmeProvider
             if (input.ChangeType != ResourceChangeType.Delete)
                 result.NewState = new FileResource().CopyArgumentsFrom(input.Config);
 
-            var deleteOld = input.PlannedState.Path != input.PriorState.Path;
+            var deleteOld = input.ChangeType != ResourceChangeType.Create
+                && input.PlannedState.Path != input.PriorState.Path;
             var createNew = input.ChangeType != ResourceChangeType.Delete
-                && (input.PlannedState.Path != input.PriorState.Path
-                || input.PlannedState.SourceOfContent != input.PriorState.SourceOfContent);
+                && (input.PlannedState.Path != input.PriorState?.Path
+                || input.PlannedState.SourceOfContent != input.PriorState?.SourceOfContent);
 
             if (deleteOld)
             {

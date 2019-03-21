@@ -1,2 +1,2 @@
-$env:TSCAPE_SESSION_START="$([DateTime]::Now.ToString('yyyyMMdd_HHmmss'))"
+$env:TF_RUN_ID="$([DateTime]::Now.ToString('yyyyMMdd_HH_mm_ss'))"
 & C:\local\bin\terraform012.exe @args

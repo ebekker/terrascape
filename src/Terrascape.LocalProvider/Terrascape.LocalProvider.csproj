@@ -12,11 +12,10 @@
 
     <!-- https://www.terraform.io/docs/configuration/providers.html#third-party-plugins -->
     <!-- terraform-provider-<NAME>_vX.Y.Z -->
-    <AssemblyName>terraform-provider-acmelo</AssemblyName>
+    <AssemblyName>terraform-provider-lo</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
   </ItemGroup>
 

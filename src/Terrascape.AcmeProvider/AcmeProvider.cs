@@ -7,7 +7,6 @@ using Terrascape.AcmeProvider;
     Resources = new[] {
         typeof(AccountResource),
         typeof(CertificateResource),
-        typeof(FileResource),
     })]
 
 namespace Terrascape.AcmeProvider

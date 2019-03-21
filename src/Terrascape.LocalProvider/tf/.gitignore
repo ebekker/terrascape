@@ -1,0 +1,5 @@
+/.terraform
+/dump.txt
+/crash.log
+/*-serilog.txt
+/terraform.tfstate*

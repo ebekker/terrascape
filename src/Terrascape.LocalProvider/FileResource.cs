@@ -3,9 +3,9 @@ using System.Linq;
 using HC.TFPlugin;
 using HC.TFPlugin.Attributes;
 
-namespace Terrascape.AcmeProvider
+namespace Terrascape.LocalProvider
 {
-    [TFResource("acmelo_file", Version = 2L)]
+    [TFResource("lo_file", Version = 2L)]
     public class FileResource
     {
         public static readonly IEnumerable<string> ContentSourceProperties = new[]
