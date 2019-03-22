@@ -1,27 +1,35 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Google.Protobuf;
 using Grpc.Core;
-using HC.TFPlugin.Attributes;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Tfplugin5;
-using static Tfplugin5.AttributePath.Types;
-using static Tfplugin5.AttributePath.Types.Step;
-using ProtoSchema = Tfplugin5.Schema;
 
 namespace HC.TFPlugin
 {
+    public class StopInput
+    { }
 
-    }
-
+    public class StopResult
     {
+        public string Error { get; set; }
     }
 
+    public interface IHasStop
+    {
+        StopResult Stop(StopInput input);
+    }
+
+    public interface IDataSourceProvider<TDataSource> :
+        IHasValidateDataSourceConfig<TDataSource>,
+        IHasReadDataSource<TDataSource>
+    { }
+
+    public interface IResourceProvider<TResource> :
+        IHasValidateResourceTypeConfig<TResource>,
+        IHasPlanResourceChange<TResource>,
+        IHasApplyResourceChange<TResource>,
+        IHasReadResource<TResource>
+    { }
 
     // References:
     //  https://github.com/hashicorp/terraform/blob/eb1346447fc635b5dea8e31112de129bf5dedfb4/providers/provider.go
@@ -40,152 +48,42 @@ namespace HC.TFPlugin
 
         public Assembly PluginAssembly { get; }
 
-        // public override async Task<Tfplugin5.PrepareProviderConfig.Types.Response> PrepareProviderConfig(
-        //     Tfplugin5.PrepareProviderConfig.Types.Request request, ServerCallContext context)
-        // {
-        //     _log.LogInformation("Called [PrepareProviderConfig]");
-        //     _log.LogInformation($"  * Config = [{Dump(request.Config)}]");
-        //     // _log.LogInformation($"  request.Config = [{JsonConvert.SerializeObject(request.Config.Msgpack.ToStringUtf8(), Formatting.Indented)}]");
-
-        //     var response = new Tfplugin5.PrepareProviderConfig.Types.Response();
-        //     (_providerInstance, response.PreparedConfig) = ProviderHelper.PrepareProviderConfig(
-        //         request.Config, PluginAssembly);
-
-        //     return await Task.FromResult(response);
-        // }
-
-        // public override async Task<Tfplugin5.ValidateResourceTypeConfig.Types.Response> ValidateResourceTypeConfig(
-        //     Tfplugin5.ValidateResourceTypeConfig.Types.Request request, ServerCallContext context)
-        // {
-        //     _log.LogInformation("Called [ValidateResourceTypeConfig]");
-        //     _log.LogInformation($"  * TypeName = [{request.TypeName}]");
-        //     _log.LogInformation($"  * Config   = [{Dump(request.Config)}]");
-
-        //     var response = new Tfplugin5.ValidateResourceTypeConfig.Types.Response();
-        //     ProviderHelper.ValidateResourceTypeConfig(_providerInstance, request.TypeName,
-        //         request.Config, PluginAssembly);
-
-        //     return await Task.FromResult(response);
-        // }
-
-        // public override async Task<Tfplugin5.ValidateDataSourceConfig.Types.Response> ValidateDataSourceConfig(
-        //     Tfplugin5.ValidateDataSourceConfig.Types.Request request, ServerCallContext context)
-        // {
-        //     _log.LogInformation("Called [ValidateDataSourceConfig]");
-        //     _log.LogInformation($"  * TypeName = [{request.TypeName}]");
-        //     _log.LogInformation($"  * Config   = [{Dump(request.Config)}]");
-
-        //     var response = new Tfplugin5.ValidateDataSourceConfig.Types.Response();
-
-        //     return await Task.FromResult(response);
-        // }
-
-        // public override async Task<Tfplugin5.UpgradeResourceState.Types.Response> UpgradeResourceState(
-        //     Tfplugin5.UpgradeResourceState.Types.Request request, ServerCallContext context)
-        // {
-        //     _log.LogInformation("*****************************");
-        //     _log.LogInformation("Called [UpgradeResourceState]");
-        //     _log.LogInformation("*****************************");
-
-        //     var response = new Tfplugin5.UpgradeResourceState.Types.Response();
-
-        //     return await Task.FromResult(response);
-        // }
-
-        // public override async Task<Tfplugin5.ReadResource.Types.Response> ReadResource(
-        //     Tfplugin5.ReadResource.Types.Request request, ServerCallContext context)
-        // {
-        //     _log.LogInformation("Called [ReadResource]");
-        //     _log.LogInformation($"  * TypeName     = [{request.TypeName}]");
-        //     _log.LogInformation($"  * CurrentState = [{Dump(request.CurrentState)}]");
-
-        //     var response = new Tfplugin5.ReadResource.Types.Response();
-
-        //     return await Task.FromResult(response);
-        // }
-
-        // public override async Task<Tfplugin5.ApplyResourceChange.Types.Response> ApplyResourceChange(
-        //     Tfplugin5.ApplyResourceChange.Types.Request request, ServerCallContext context)
-        // {
-        //     _log.LogInformation("Called [ApplyResourceChange]");
-
-        //     _log.LogInformation($"    TypeName         = [{request.TypeName}]");
-        //     _log.LogInformation($"    Config           = [{Dump(request.Config)}]");
-        //     _log.LogInformation($"    PriorState       = [{Dump(request.PriorState)}]");
-        //     _log.LogInformation($"    PlannedPrivate   = [{request.PlannedPrivate?.ToStringUtf8()}]");
-        //     _log.LogInformation($"    PlannedState     = [{Dump(request.PlannedState)}]");
-
-        //     var response = new Tfplugin5.ApplyResourceChange.Types.Response();
-
-        //     response.NewState = request.PlannedState;
-        //     response.Private = request.PlannedPrivate;
-
-        //     return await Task.FromResult(response);
-        // }
-
-        // public override async Task<Tfplugin5.ImportResourceState.Types.Response> ImportResourceState(
-        //     Tfplugin5.ImportResourceState.Types.Request request, ServerCallContext context)
-        // {
-        //     _log.LogInformation("Called [ImportResourceState]");
-
-        //     var response = new Tfplugin5.ImportResourceState.Types.Response();
-
-        //     response.ImportedResources.Add(new ImportResourceState.Types.ImportedResource().
-
-        //     return await Task.FromResult(response);
-        // }
-
-        public static string Dump(DynamicValue dv)
-        {
-            string json = null;
-            if (dv.Json != null)
-            {
-                json = dv.Json.ToStringUtf8();
-            }
-
-            string msgpack = null;
-            if (dv.Msgpack != null)
-            {
-                msgpack = dv.Msgpack.ToStringUtf8();
-            }
-
-            return JsonConvert.SerializeObject(new { json, msgpack });
-        }
-
-        public class SysInfoInput
-        {
-            public string inp1 { get; set; }
-            public bool inp2 { get; set; }
-            public int inp3 { get; set; }
-        }
-
-        public class SysInfoOutput : SysInfoInput
-        {
-            public string name { get; set;}
-
-            public string version { get; set; }
-        }
-
-
-
-            try
-            {
-
-                {
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-
         public override async Task<Tfplugin5.Stop.Types.Response> Stop(
             Tfplugin5.Stop.Types.Request request, ServerCallContext context)
         {
-            _log.LogInformation("Called [Stop]");
+            _log.LogDebug(">>>{method}>>>", nameof(Stop));
+            _log.LogTrace($"->input[{nameof(request)}] = {{@request}}", request);
+            _log.LogTrace($"->input[{nameof(context)}] = {{@context}}", context);
 
-            var response = new Tfplugin5.Stop.Types.Response();
+            try
+            {
+                if (_providerInstance == null)
+                    throw new Exception("provider instance was not configured previously");
 
-            return await Task.FromResult(response);
+                var response = new Tfplugin5.Stop.Types.Response();
+
+                var plugin = SchemaHelper.GetPluginDetails(PluginAssembly);
+ 
+                if (typeof(IHasStop).IsAssignableFrom(plugin.Provider))
+                {
+                    var invokeInput = new StopInput();
+                    
+                    var invokeResult = (_providerInstance as IHasStop).Stop(invokeInput);
+                    if (invokeResult == null)
+                        throw new Exception("invocation result returned null");
+
+                    if (!string.IsNullOrEmpty(invokeResult.Error))
+                        response.Error = invokeResult.Error;
+                }
+
+                _log.LogTrace("<-result = {@response}", response);
+                return await Task.FromResult(response);
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "<!exception = ");
+                throw;
+            }
         }
 
         /// <summary>
