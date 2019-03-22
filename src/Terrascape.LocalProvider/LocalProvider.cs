@@ -7,6 +7,7 @@ using Terrascape.LocalProvider;
     typeof(Terrascape.LocalProvider.LocalProvider),
     DataSources = new[] {
         typeof(SystemInfoDataSource),
+        typeof(FileInfoDataSource),
     },
     Resources = new[] {
         typeof(FileResource),

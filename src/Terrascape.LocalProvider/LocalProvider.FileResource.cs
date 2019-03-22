@@ -11,11 +11,7 @@ using Newtonsoft.Json;
 
 namespace Terrascape.LocalProvider
 {
-    public partial class LocalProvider :
-        IHasValidateResourceTypeConfig<FileResource>,
-        IHasPlanResourceChange<FileResource>,
-        IHasApplyResourceChange<FileResource>,
-        IHasReadResource<FileResource>
+    public partial class LocalProvider : IResourceProvider<FileResource>
     {
         public ValidateResourceTypeConfigResult<FileResource> ValidateConfig(
             ValidateResourceTypeConfigInput<FileResource> input)
