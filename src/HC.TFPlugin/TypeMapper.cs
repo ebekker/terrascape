@@ -16,6 +16,7 @@ namespace HC.TFPlugin
         public static readonly ByteString TypeBool = ByteString.CopyFromUtf8(@"""bool""");
         public static readonly ByteString TypeNumber = ByteString.CopyFromUtf8(@"""number""");
         public static readonly ByteString TypeInt = ByteString.CopyFromUtf8(@"""number""");//(@"""int""");
+        public static readonly ByteString TypeLong = ByteString.CopyFromUtf8(@"""number""");//(@"""long""");
         public static readonly ByteString TypeFloat = ByteString.CopyFromUtf8(@"""float64""");
         public static readonly ByteString TypeString = ByteString.CopyFromUtf8(@"""string""");
 
@@ -34,6 +35,9 @@ namespace HC.TFPlugin
                 return TypeBool;
 
             if (typeof(int) == t)
+                return TypeInt;
+
+            if (typeof(long) == t)
                 return TypeInt;
 
             // TODO: Is there a float128?
