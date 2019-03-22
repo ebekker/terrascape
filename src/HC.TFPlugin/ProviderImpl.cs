@@ -68,17 +68,17 @@ namespace HC.TFPlugin
         //     return await Task.FromResult(response);
         // }
 
-        public override async Task<Tfplugin5.ValidateDataSourceConfig.Types.Response> ValidateDataSourceConfig(
-            Tfplugin5.ValidateDataSourceConfig.Types.Request request, ServerCallContext context)
-        {
-            _log.LogInformation("Called [ValidateDataSourceConfig]");
-            _log.LogInformation($"  * TypeName = [{request.TypeName}]");
-            _log.LogInformation($"  * Config   = [{Dump(request.Config)}]");
+        // public override async Task<Tfplugin5.ValidateDataSourceConfig.Types.Response> ValidateDataSourceConfig(
+        //     Tfplugin5.ValidateDataSourceConfig.Types.Request request, ServerCallContext context)
+        // {
+        //     _log.LogInformation("Called [ValidateDataSourceConfig]");
+        //     _log.LogInformation($"  * TypeName = [{request.TypeName}]");
+        //     _log.LogInformation($"  * Config   = [{Dump(request.Config)}]");
 
-            var response = new Tfplugin5.ValidateDataSourceConfig.Types.Response();
+        //     var response = new Tfplugin5.ValidateDataSourceConfig.Types.Response();
 
-            return await Task.FromResult(response);
-        }
+        //     return await Task.FromResult(response);
+        // }
 
         // public override async Task<Tfplugin5.UpgradeResourceState.Types.Response> UpgradeResourceState(
         //     Tfplugin5.UpgradeResourceState.Types.Request request, ServerCallContext context)
@@ -166,64 +166,17 @@ namespace HC.TFPlugin
             public string version { get; set; }
         }
 
-        public override async Task<Tfplugin5.ReadDataSource.Types.Response> ReadDataSource(
-            Tfplugin5.ReadDataSource.Types.Request request, ServerCallContext context)
-        {
-            _log.LogInformation("Called [ReadDataSource]");
-            _log.LogInformation($"    TypeName = [{request.TypeName}]");
-            _log.LogInformation($"    Config   = [{Dump(request.Config)}]");
 
-            var response = new Tfplugin5.ReadDataSource.Types.Response();
 
             try
             {
 
-                if (request.TypeName == "lo_sys_info")
                 {
-                    //var inp = Cty.MsgpackHelper.Unmarshal<SysInfoInput>(request.Config);
-                    var inp = DynamicValue.Unmarshal<SysInfoInput>(request.Config);
-                    _log.LogInformation("  Got Input:  " + JsonConvert.SerializeObject(inp));
-                    var outp = new SysInfoOutput
-                    {
-                        inp1 = inp.inp1,
-                        inp2 = inp.inp2,
-                        inp3 = inp.inp3,
-                        name = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
-                        version = System.Environment.OSVersion.VersionString,
-                    };
-
-                    // response.Diagnostics.Add(new Diagnostic
-                    // {
-
-                    // }.);
-
-                    // response.State = Cty.MsgpackHelper.MarshalDynamicValue<object>(null);
-                    // response.State = Cty.MsgpackHelper.MarshalDynamicValue(new Dictionary<string, string>()); //new DynamicValue();
-                    // response.State = Cty.MsgpackHelper.MarshalDynamicValue(outp);
-                    response.State = DynamicValue.Marshal(outp);
-                    //response.State = request.Config;
-
-                    _log.LogInformation("  Output = " + JsonConvert.SerializeObject(outp));
                 }
             }
             catch (Exception ex)
             {
-                _log.LogInformation("Failed to compute response:" + ex.ToString());
             }
-
-            // try
-            // {
-            //     _log.LogInformation($"  Got SysInfoInput = [{JsonConvert.SerializeObject(inp)}]");
-            // }
-            // catch (Exception ex)
-            // {
-            //     _log.LogInformation("Failed to get os_name:" + ex.ToString());
-            // }
-
-            _log.LogInformation("  Sending Reponse State: " + response.State);
-
-            return await Task.FromResult(response);
-        }
 
         public override async Task<Tfplugin5.Stop.Types.Response> Stop(
             Tfplugin5.Stop.Types.Request request, ServerCallContext context)
