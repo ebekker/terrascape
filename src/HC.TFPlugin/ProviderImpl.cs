@@ -16,45 +16,10 @@ using ProtoSchema = Tfplugin5.Schema;
 
 namespace HC.TFPlugin
 {
-    public class TFSteps
-    {
-        private List<Step> _steps = new List<Step>();
 
-        public AttributePath ToPath() => new AttributePath { Steps = { _steps } };
-
-        public TFSteps Attribute(string name) => Add(new Step { AttributeName = name });
-
-        public TFSteps Element(long index) => Add(new Step { ElementKeyInt = index });
-
-        public TFSteps Element(string name) => Add(new Step { ElementKeyString = name });
-
-        protected TFSteps Add(Step step)
-        {
-            _steps.Add(step);
-            return this;
-        }
     }
 
-    public class TFAttributePaths : IEnumerable<TFSteps>
     {
-        private List<TFSteps> _paths = new List<TFSteps>();
-
-        public IEnumerable<TFSteps> All => _paths;
-
-        public IEnumerable<AttributePath> ToPaths() => ToPaths(_paths);
-
-        public static IEnumerable<AttributePath> ToPaths(IEnumerable<TFSteps> steps) =>
-            steps.Select(s => s.ToPath());
-
-        public TFAttributePaths Add(TFSteps steps)
-        {
-            _paths.Add(steps);
-            return this;
-        }
-
-        public IEnumerator<TFSteps> GetEnumerator() => _paths.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => _paths.GetEnumerator();
     }
 
 
