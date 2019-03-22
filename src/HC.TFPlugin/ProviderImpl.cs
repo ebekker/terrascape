@@ -39,7 +39,7 @@ namespace HC.TFPlugin
     {
         private ILogger _log = LogUtil.Create<ProviderImpl>();
 
-        public object _providerInstance;
+        private object _ProviderInstance;
 
         public ProviderImpl(Assembly pluginAssembly = null)
         {
@@ -47,6 +47,8 @@ namespace HC.TFPlugin
         }
 
         public Assembly PluginAssembly { get; }
+
+        public object ProviderInstance => _ProviderInstance;
 
         public override async Task<Tfplugin5.Stop.Types.Response> Stop(
             Tfplugin5.Stop.Types.Request request, ServerCallContext context)
@@ -57,7 +59,7 @@ namespace HC.TFPlugin
 
             try
             {
-                if (_providerInstance == null)
+                if (_ProviderInstance == null)
                     throw new Exception("provider instance was not configured previously");
 
                 var response = new Tfplugin5.Stop.Types.Response();
@@ -68,7 +70,7 @@ namespace HC.TFPlugin
                 {
                     var invokeInput = new StopInput();
                     
-                    var invokeResult = (_providerInstance as IHasStop).Stop(invokeInput);
+                    var invokeResult = (_ProviderInstance as IHasStop).Stop(invokeInput);
                     if (invokeResult == null)
                         throw new Exception("invocation result returned null");
 

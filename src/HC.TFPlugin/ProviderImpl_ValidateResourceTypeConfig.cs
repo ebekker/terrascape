@@ -36,7 +36,7 @@ namespace HC.TFPlugin
 
             try
             {
-                if (_providerInstance == null)
+                if (_ProviderInstance == null)
                     throw new Exception("provider instance was not configured previously");
 
                 var response = new Tfplugin5.ValidateResourceTypeConfig.Types.Response();
@@ -60,7 +60,7 @@ namespace HC.TFPlugin
 
                     // Invoke the functional method
                     var invokeMethod = invokeType.GetMethod(nameof(IHasValidateResourceTypeConfig<object>.ValidateConfig));
-                    var invokeResult = invokeMethod.Invoke(_providerInstance, new[] { invokeInput });
+                    var invokeResult = invokeMethod.Invoke(_ProviderInstance, new[] { invokeInput });
                     if (invokeResult == null)
                         throw new Exception("invocation result returned null");
                     if (!invokeResultType.IsAssignableFrom(invokeResult.GetType()))

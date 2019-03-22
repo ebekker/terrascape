@@ -51,13 +51,13 @@ namespace HC.TFPlugin
                 response.PreparedConfig = request.Config;
 
                 var plugin = SchemaHelper.GetPluginDetails(PluginAssembly);
-                _providerInstance = DynamicValue.Unmarshal(plugin.Provider, request.Config);
+                _ProviderInstance = DynamicValue.Unmarshal(plugin.Provider, request.Config);
 
                 if (typeof(IHasPrepareProviderConfig).IsAssignableFrom(plugin.Provider))
                 {
                     var invokeInput = new PrepareProviderConfigInput();
 
-                    var invokeResult = (_providerInstance as IHasPrepareProviderConfig).PrepareConfig(invokeInput);
+                    var invokeResult = (_ProviderInstance as IHasPrepareProviderConfig).PrepareConfig(invokeInput);
                     if (invokeResult == null)
                         throw new Exception("invocation result returned null");
 
@@ -65,7 +65,7 @@ namespace HC.TFPlugin
                     if (diagnostics.Count() > 0)
                         response.Diagnostics.Add(diagnostics.All());
 
-                    response.PreparedConfig = DynamicValue.Marshal(plugin.Provider, _providerInstance);
+                    response.PreparedConfig = DynamicValue.Marshal(plugin.Provider, _ProviderInstance);
                 }
 
                 _log.LogTrace("<-result = {@response}", response);

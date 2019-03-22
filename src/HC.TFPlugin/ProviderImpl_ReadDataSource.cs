@@ -60,7 +60,7 @@ namespace HC.TFPlugin
 
                     // Invoke the functional method
                     var invokeMethod = invokeType.GetMethod(nameof(IHasReadDataSource<object>.Read));
-                    var invokeResult = invokeMethod.Invoke(_providerInstance, new[] { invokeInput });
+                    var invokeResult = invokeMethod.Invoke(_ProviderInstance, new[] { invokeInput });
                     if (invokeResult == null)
                         throw new Exception("invocation result returned null");
                     if (!invokeResultType.IsAssignableFrom(invokeResult.GetType()))

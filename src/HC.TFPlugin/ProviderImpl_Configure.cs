@@ -44,7 +44,7 @@ namespace HC.TFPlugin
                 var response = new Tfplugin5.Configure.Types.Response();
 
                 var plugin = SchemaHelper.GetPluginDetails(PluginAssembly);
-                _providerInstance = DynamicValue.Unmarshal(plugin.Provider, request.Config);
+                _ProviderInstance = DynamicValue.Unmarshal(plugin.Provider, request.Config);
 
                 if (typeof(IHasConfigure).IsAssignableFrom(plugin.Provider))
                 {
@@ -53,7 +53,7 @@ namespace HC.TFPlugin
                         TerraformVersion = request.TerraformVersion,
                     };
                     
-                    var invokeResult = (_providerInstance as IHasConfigure).Configure(invokeInput);
+                    var invokeResult = (_ProviderInstance as IHasConfigure).Configure(invokeInput);
                     if (invokeResult == null)
                         throw new Exception("invocation result returned null");
                     
