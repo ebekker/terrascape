@@ -2,7 +2,16 @@
 
 On-host configuration management powered by [Terraform](https://github.com/hashicorp/terraform).
 
-Terraform is a great tool to manage infrastructure across multiple cloud platform and services providers using a declarative notation.  But what if you could use that same notation and tooling to manage your on-host configuration?
+I'm using this project as a _playground_ to experiment with a few ideas:
+
+* Implement a C#/.NET-based plugin model for TF (done!)
+* Implement more efficient out-of-process plugin hosting model for TF
+* Integrate a PowerShell Core plugin host to allow simpler and ad-hoc authoring of TF plugins
+* Develop a set of sample resources and supporting tooling/ecosystem for using TF to manage configuration for a host
+
+## Configuring a Host
+
+Terraform is a great tool to manage infrastructure across multiple cloud platform and service providers using a declarative notation.  But what if you could use that same notation and tooling to manage your on-host configuration?
 
 Terraform is essentially a state management and differencing engine, with the different provider plugins doing the actual heaving lifting of interacting with different service providers to implement changes in the infrastructure in the form of resources.
 
