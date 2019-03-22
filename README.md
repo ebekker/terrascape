@@ -4,7 +4,7 @@ On-host configuration management powered by [Terraform](https://github.com/hashi
 
 I'm using this project as a _playground_ to experiment with a few ideas:
 
-* Implement a C#/.NET-based plugin model for TF (done!)
+* Implement a C#/.NET-based plugin model for TF ([done](https://github.com/ebekker/terrascape/tree/master/src/Terrascape.LocalProvider)!)
 * Implement more efficient out-of-process plugin hosting model for TF
 * Integrate a PowerShell Core plugin host to allow simpler and ad-hoc authoring of TF plugins
 * Develop a set of sample resources and supporting tooling/ecosystem for using TF to manage configuration for a host
