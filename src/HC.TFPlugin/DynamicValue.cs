@@ -12,7 +12,8 @@ namespace Tfplugin5
         
         public static DynamicValue Marshal(Type t, object value)
         {
-            return HC.TFPlugin.DynamicValueExtensions.MarshalViaMsgPackCli(t, value);
+            // return HC.TFPlugin.DynamicValueExtensions.MarshalViaMsgPackCli(t, value);
+            return HC.TFPlugin.DynamicValueExtensions.MarshalViaMPSharp(t, value);
         }
 
         public static T Unmarshal<T>(DynamicValue value)
@@ -22,7 +23,8 @@ namespace Tfplugin5
 
         public static object Unmarshal(Type t, DynamicValue value)
         {
-            return HC.TFPlugin.DynamicValueExtensions.UnmarshalViaMsgPackCli(t, value);
+            // return HC.TFPlugin.DynamicValueExtensions.UnmarshalViaMsgPackCli(t, value);
+            return HC.TFPlugin.DynamicValueExtensions.UnmarshalViaMPSharp(t, value);
         }
     } 
 }
