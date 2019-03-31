@@ -34,10 +34,10 @@ namespace Terrascape.LocalProvider
                 Attributes = attrs,
                 Name = fi.Name,
                 Extension = fi.Extension,
-                CreationTime = fi.CreationTime.ToString("r"),
-                LastAccessTime = fi.LastAccessTime.ToString("r"),
-                LastWriteTime = fi.LastWriteTime.ToString("r"),
-                Length = fi.Length,
+                CreationTime = fi.Exists ? fi.CreationTime.ToString("r") : "",
+                LastAccessTime = fi.Exists ? fi.LastAccessTime.ToString("r") : "",
+                LastWriteTime = fi.Exists ? fi.LastWriteTime.ToString("r") : "",
+                Length = fi.Exists ? fi.Length : -1,
             };
 
             return result;
