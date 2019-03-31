@@ -5,8 +5,19 @@ using HC.TFPlugin.Attributes;
 
 namespace Terrascape.LocalProvider
 {
+    public interface IContentSource
+    {
+        string Content { get; }
+
+        string ContentBase64 { get; }
+
+        string ContentPath { get; }
+
+        string ContentUrl { get; }
+    }
+
     [TFResource("lo_file", Version = 2L)]
-    public class FileResource
+    public partial class FileResource : IContentSource
     {
         public static readonly IEnumerable<string> ContentSourceProperties = new[]
         {
@@ -56,6 +67,13 @@ namespace Terrascape.LocalProvider
         public string Content { get; set; }
 
         /// <summary>
+        /// If set, will compute a checksum using the specified digest method.
+        /// </summary>
+        /// <value></value>
+        [TFArgument("compute_checksum")]
+        public string ComputeChecksum { get; set; }
+
+        /// <summary>
         /// (Exactly one of the content source arguments must be specified.)
         /// Base64-encoded data that will be decoded and written as raw bytes
         /// to the file resource. This allows safely uploading non-UTF8 binary
@@ -91,8 +109,9 @@ namespace Terrascape.LocalProvider
             })]
         public string ContentUrl { get; set; }
 
-        [TFArgument("compute_checksum")]
-        public string ComputeChecksum { get; set; }
+        [TFNested("append")]
+        public IList<Append> Appends { get; set; }
+
 
         [TFComputed("full_path")]
         public string FullPath { get; set; }
@@ -104,54 +123,8 @@ namespace Terrascape.LocalProvider
         [TFComputed("last_modified")]
         public string LastModified { get; set; }
 
-        // [TFComputed("md5_checksum")]
-        // public string MD5Checksum
-        // {
-        //     get => MD5ChecksumKey == ComputeChecksum ? Checksum : string.Empty;
-        //     set
-        //     {
-        //         if (!string.IsNullOrEmpty(value))
-        //             ComputeChecksum = value;
-        //     }
-        // }
-
-        // [TFComputed("sha1_checksum")]
-        // public string SHA1Checksum
-        // {
-        //     get => SHA1ChecksumKey == ComputeChecksum ? Checksum : string.Empty;
-        //     set
-        //     {
-        //         if (!string.IsNullOrEmpty(value))
-        //             ComputeChecksum = value;
-        //     }
-        // }
-
-        // [TFComputed("sha256_checksum")]
-        // public string SHA256Checksum
-        // {
-        //     get => SHA256ChecksumKey == ComputeChecksum ? Checksum : string.Empty;
-        //     set
-        //     {
-        //         if (!string.IsNullOrEmpty(value))
-        //             ComputeChecksum = value;
-        //     }
-        // }
-
-        // /// <summary>
-        // /// Resolves to the base64-encoded SHA256 hash of the file.
-        // /// This is equivalent to ${base64sha256(file("path/to/file.ext"))},
-        // /// and can be used with other resources to trigger an update.
-        // /// </summary>
-        // [TFComputed("source_code_hash")]
-        // public string SourceCodeHash
-        // {
-        //     get => SourceCodeHashKey == ComputeChecksum ? Checksum : string.Empty;
-        //     set
-        //     {
-        //         if (!string.IsNullOrEmpty(value))
-        //             ComputeChecksum = value;
-        //     }
-        // }
+        [TFComputed("checksum")]
+        public string Checksum { get; set; } = string.Empty;
 
         public string SourceOfContent
         {
@@ -168,8 +141,5 @@ namespace Terrascape.LocalProvider
                 return string.Empty;
             }
         }
-
-        [TFComputed("checksum")]
-        public string Checksum { get; set; } = string.Empty;
     }
 }

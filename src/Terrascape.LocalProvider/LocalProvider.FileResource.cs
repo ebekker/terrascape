@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using HC.TFPlugin;
 using HC.TFPlugin.Attributes;
 using HC.TFPlugin.Diagnostics;
@@ -128,7 +129,7 @@ namespace Terrascape.LocalProvider
                 result.NewState = new FileResource().CopyArgumentsFrom(input.Config);
 
             var deleteOld = input.ChangeType != ResourceChangeType.Create
-                && input.PlannedState.Path != input.PriorState.Path;
+                && input.PlannedState?.Path != input.PriorState.Path;
             var createNew = input.ChangeType != ResourceChangeType.Delete
                 && (input.PlannedState.Path != input.PriorState?.Path
                 || input.PlannedState.SourceOfContent != input.PriorState?.SourceOfContent);
@@ -162,6 +163,48 @@ namespace Terrascape.LocalProvider
                     using (var wc = new WebClient())
                     {
                         wc.DownloadFile(input.Config.ContentUrl, input.Config.Path);
+                    }
+                }
+
+                if (input.Config.Appends?.Count > 0)
+                {
+                    foreach (var cs in input.Config.Appends)
+                    {
+                        _log.LogInformation("APPENDING new path");
+                        WebClient wc = null;
+                        Stream source = null;
+                        if (!string.IsNullOrEmpty(cs.Content))
+                        {
+                            source = new MemoryStream(Encoding.UTF8.GetBytes(
+                                cs.Content));
+                        }
+                        else if (!string.IsNullOrEmpty(cs.ContentBase64))
+                        {
+                            source = new MemoryStream(Convert.FromBase64String(
+                                cs.ContentBase64));
+                        }
+                        else if (!string.IsNullOrEmpty(cs.ContentPath))
+                        {
+                            source = new FileStream(cs.ContentPath, FileMode.Open);
+                        }
+                        else if (!string.IsNullOrEmpty(cs.ContentUrl))
+                        {
+                            wc = new WebClient();
+                            source = wc.OpenRead(cs.ContentUrl);
+                        }
+
+                        try
+                        {
+                            using (source)
+                            using (var target = new FileStream(input.Config.Path, FileMode.Append))
+                            {
+                                source.CopyTo(target);
+                            }
+                        }
+                        finally
+                        {
+                            wc?.Dispose();
+                        }
                     }
                 }
             }

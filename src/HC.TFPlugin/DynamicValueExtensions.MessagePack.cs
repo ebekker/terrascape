@@ -10,7 +10,6 @@ namespace HC.TFPlugin
     //  https://github.com/zclconf/go-cty/blob/master/cty/msgpack/doc.go
     //  https://github.com/zclconf/go-cty/blob/master/cty/msgpack/unknown.go
 
-
     public static partial class DynamicValueExtensions
     {
         // https://github.com/zclconf/go-cty/blob/master/cty/msgpack/unknown.go

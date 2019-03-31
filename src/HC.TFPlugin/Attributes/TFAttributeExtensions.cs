@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace HC.TFPlugin.Attributes
@@ -14,10 +16,26 @@ namespace HC.TFPlugin.Attributes
             var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
             foreach (var p in props)
             {
-                var attr = p.GetCustomAttribute<TFArgumentAttribute>();
-                if (attr == null)
+                var argAttr = p.GetCustomAttribute<TFArgumentAttribute>();
+                var nestedAttr = p.GetCustomAttribute<TFNestedAttribute>();
+                if (argAttr == null && nestedAttr == null)
                     continue;
-                p.SetValue(target, p.GetValue(source));
+                
+                var val = p.GetValue(source);
+
+                if (val == null && nestedAttr != null)
+                {
+                    if (TypeMapper.GetSubclassOfGenericTypeDefinition(
+                        typeof(IList<>), p.PropertyType) is Type listType)
+                        val = Activator.CreateInstance(
+                            typeof(List<>).MakeGenericType(listType.GenericTypeArguments));
+                    else if (TypeMapper.GetSubclassOfGenericTypeDefinition(
+                        typeof(IDictionary<,>), p.PropertyType) is Type mapType)
+                        val = Activator.CreateInstance(
+                            typeof(Dictionary<,>).MakeGenericType(mapType.GenericTypeArguments));
+                }
+
+                p.SetValue(target, val);
             }
 
             return target;

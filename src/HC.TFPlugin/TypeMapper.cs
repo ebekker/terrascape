@@ -47,15 +47,12 @@ namespace HC.TFPlugin
             if (typeof(string) == t)
                 return TypeString;
 
-            var mapSubclass = GetSubclassOfGenericTypeDefinition(typeof(IDictionary<,>), t);
-            if (mapSubclass != null)
+            var mapElementType = MapElementTypeFrom(t);
+            if (mapElementType != null)
             {
-                if (mapSubclass.GenericTypeArguments[0] != typeof(string))
-                    throw new NotSupportedException("maps can only support string keys");
-                
                 try
                 {
-                    return TypeMap(From(mapSubclass.GenericTypeArguments[1]));
+                    return TypeMap(From(mapElementType));
                 }
                 catch (Exception ex)
                 {
@@ -63,12 +60,12 @@ namespace HC.TFPlugin
                 }
             }
 
-            var listSubclass = GetSubclassOfGenericTypeDefinition(typeof(IList<>), t);
-            if (listSubclass != null)
+            var listElementType = ListElementTypeFrom(t);
+            if (listElementType != null)
             {
                 try
                 {
-                    return TypeList(From(listSubclass.GenericTypeArguments[0]));
+                    return TypeList(From(listElementType));
                 }
                 catch (Exception ex)
                 {
@@ -77,6 +74,20 @@ namespace HC.TFPlugin
             }
 
             throw new NotSupportedException("unable to map native type to Schema type");
+        }
+
+        public static Type MapElementTypeFrom(Type type)
+        {
+            var mapSubclass = GetSubclassOfGenericTypeDefinition(typeof(IDictionary<,>), type);
+            if (mapSubclass != null && mapSubclass.GenericTypeArguments[0] != typeof(string))
+                throw new NotSupportedException("maps can only support string keys");
+            return mapSubclass?.GenericTypeArguments[1];
+        }
+
+        public static Type ListElementTypeFrom(Type type)
+        {
+            var listSubclass = GetSubclassOfGenericTypeDefinition(typeof(IList<>), type);
+            return listSubclass?.GenericTypeArguments[0];
         }
 
         // Based on:

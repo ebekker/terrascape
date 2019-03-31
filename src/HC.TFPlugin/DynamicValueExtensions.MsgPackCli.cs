@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,8 +15,6 @@ namespace HC.TFPlugin
 {
     public static partial class DynamicValueExtensions
     {
-        private static ILogger _log = LogUtil.Create(typeof(DynamicValueExtensions));
-
         public static DynamicValue MarshalViaMsgPackCli(Type t, object value)
         {
             var ctx = new SerializationContext
@@ -93,7 +92,12 @@ namespace HC.TFPlugin
 
         protected override void PackToCore(Packer packer, T objectTree)
         {
-            var type = typeof(T);
+            _log.LogDebug("***** PACKING " + typeof(T).FullName);
+            PackMap(packer, typeof(T), objectTree);
+        }
+
+        protected void PackMap(Packer packer, Type type, object inst)
+        {
             var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Select(p => (prop: p, attr: p.GetCustomAttribute<TFAttributeAttribute>()))
                 .Where(pa => pa.attr != null)
@@ -102,13 +106,30 @@ namespace HC.TFPlugin
             foreach (var p in props)
             {
                 var name = p.attr.Name;
-                var value = p.prop.GetValue(objectTree);
+                var value = p.prop.GetValue(inst);
 
                 packer.PackString(name);
                 if (p.attr.Computed && value == null)
                 {
                     _log.LogDebug("Packing UNKNOWN VALUE Extended Type Code");
                     packer.PackExtendedTypeValue(UnknownValExtTypeCode, UnknownValExtArgBytes);
+                }
+                else if (p.attr.Nested)
+                {
+                    if (value == null)
+                    {
+                        _log.LogWarning("Nested property has NULL value, skipping");
+                    }
+                    else
+                    {
+                        var propType = p.prop.PropertyType;
+                        if (TypeMapper.MapElementTypeFrom(propType) is Type mapElementType)
+                            packer.PackObject(value);
+                        else if (TypeMapper.ListElementTypeFrom(propType) is Type listElementType)
+                            packer.PackObject(value);
+                        else
+                            PackMap(packer, propType, value);
+                    }
                 }
                 else
                 {
@@ -119,17 +140,78 @@ namespace HC.TFPlugin
 
         protected override T UnpackFromCore(Unpacker unpacker)
         {
+            // // // _log.LogDebug("***** UNPACKING " + typeof(T).FullName);
+            // // // _log.LogDebug("  Collection: " + unpacker.IsCollectionHeader);
+            // // // _log.LogDebug("  Array: " + unpacker.IsArrayHeader);
+            // // // _log.LogDebug("  Map: " + unpacker.IsMapHeader);
+            
+            // // // unpacker.ReadMapLength(out var mapLen);
+            // // // _log.LogDebug("  mapLen: " + mapLen);
+
+            // // // var mpo = unpacker.ReadItem();
+            // // // //unpacker.ReadObject(out var mpo);
+            // // // _log.LogDebug("  NextUp: " + mpo?.UnderlyingType.FullName);
+
             var map = unpacker.Unpack<Dictionary<string, object>>();
             if (map == null)
                 throw new InvalidDataException("unable to unpack expected map serialization");
+            return (T)UnpackMap(map, typeof(T));
 
-            var type = typeof(T);
+            // unpacker.ReadObject(out var result);
+            // if (result.IsList) // (unpacker.IsArrayHeader)
+            // {
+            //     var list = result.AsList(); // unpacker.Unpack<List<object>>();
+            //     if (list == null)
+            //         throw new InvalidDataException("unable to unpack expected list serialization");
+
+            //     return (T)(object)list;
+            // }
+            // else if (result.IsMap) // (unpacker.IsMapHeader)
+            // {
+            //     var map = result.AsDictionary().ToDictionary(
+            //         kv => kv.Key.ToString(),
+            //         kv => kv.Value.ToObject()); // unpacker.Unpack<Dictionary<string, object>>();
+            //     if (map == null)
+            //         throw new InvalidDataException("unable to unpack expected map serialization");
+
+            //     return (T)UnpackMap(map, typeof(T));
+            // }
+            // // else if (result is MessagePackObject mpo) // (unpacker.IsMapHeader)
+            // // {
+            // //     mpo.ToObject();
+            // //     var map = mpo.AsDictionary().ToDictionary(
+            // //         kv => kv.Key.ToString(),
+            // //         kv => kv.Value.ToObject()); // unpacker.Unpack<Dictionary<string, object>>();
+            // //     if (map == null)
+            // //         throw new InvalidDataException("unable to unpack expected map serialization");
+
+            // //     return (T)UnpackMap(map, typeof(T));
+            // // }
+            // else
+            // {
+            //     if (result is MessagePackObject mpo && mpo.IsNil)
+            //     {
+            //         _log.LogDebug("MPO is NIL");
+
+            //         return Activator.CreateInstance<T>();
+
+            //         //return default(T);
+            //     }
+
+            //     var val = mpo.ToObject();
+            //     _log.LogWarning($"cannot resolve MPO: [{val.GetType().FullName}][{val}]");
+            //     throw new InvalidDataException("unexpected serialized data: " + result.GetType().FullName);
+            // }
+        }
+
+        protected object UnpackMap(IDictionary<string, object> map, Type type)
+        {
             var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Select(p => (prop: p, attr: p.GetCustomAttribute<TFAttributeAttribute>()))
                 .Where(pa => pa.attr != null)
                 .ToArray();
 
-            var inst = Activator.CreateInstance<T>();
+            var inst = Activator.CreateInstance(type);
             foreach (var p in props)
             {
                 var name = p.attr.Name;
@@ -154,16 +236,64 @@ namespace HC.TFPlugin
                         _log.LogWarning("Invalid Ext Type for [{propName}]", name);
                     else if (UnknownValExtTypeCode != mpeto.TypeCode
                         && UnknownValExtTypeCodeAlt != mpeto.TypeCode)
-                        _log.LogWarning("Unexpected Ext Type TypeCode for [{propName}]: [{typeCode}][{typeBody}]",
-                            name, mpeto.TypeCode, BitConverter.ToString(mpeto.GetBody()));
+                        // _log.LogWarning("Unexpected Ext Type TypeCode for [{propName}]: [{typeCode}][{typeBody}]",
+                        //     name, mpeto.TypeCode, BitConverter.ToString(mpeto.GetBody()));
+                        throw new Exception("UNKNOWN");
                     else if (!UnknownValExtArgBytes.SequenceEqual(mpeto.GetBody())
                         && !UnknownValExtArgBytesAlt.SequenceEqual(mpeto.GetBody()))
-                        _log.LogWarning("Unexpected Ext Type Body for [{propName}]: [{typeCode}][{typeBody}]",
-                            name, mpeto.TypeCode, BitConverter.ToString(mpeto.GetBody()));
+                        // _log.LogWarning("Unexpected Ext Type Body for [{propName}]: [{typeCode}][{typeBody}]",
+                        //     name, mpeto.TypeCode, BitConverter.ToString(mpeto.GetBody()));
+                        throw new Exception("UNKNOWN");
                     else
                         _log.LogWarning("UnknownValue Ext Type for [{propName}]", name);
                     continue;
                 }
+
+                // if (p.attr.Nested)
+                // {
+                //     var propType = p.prop.PropertyType;
+                //     if (TypeMapper.ListElementTypeFrom(propType) is Type listElementType)
+                //     {
+                //         if (value is MessagePackObject mpoList && mpoList.IsList)
+                //         {
+                //             IList list = (IList)Activator.CreateInstance(listElementType);
+                //             foreach (var item in mpoList.AsList())
+                //             {
+                //                 list.Add(item.ToObject());
+                //             }
+                //             value = list;
+                //         }
+                //         else
+                //         {
+                //             _log.LogWarning("incompatible deserialized value with nested list");
+                //         }
+                //     }
+                //     else if (TypeMapper.MapElementTypeFrom(propType) is Type mapElementType)
+                //     {
+                //         if (value is MessagePackObjectDictionary mapValue)
+                //         {
+                //             value = UnpackMap(mapValue.ToDictionary(
+                //                 kv => kv.Key.AsString(),
+                //                 kv => kv.Value.ToObject()), p.prop.PropertyType);
+                //         }
+                //         else
+                //         {
+                //             _log.LogWarning("incompatible deserialized value with nested map");
+                //         }
+                //     }
+                //     if (value is MessagePackObjectDictionary mapObjectValue)
+                //     {
+                //         value = UnpackMap(mapObjectValue.ToDictionary(
+                //             kv => kv.Key.AsString(),
+                //             kv => kv.Value.ToObject()), p.prop.PropertyType);
+                //     }
+                //     else
+                //     {
+                //         _log.LogWarning("incompatible value for NESTED [{propName}]: [{propType}] [{valType}]",
+                //             name, p.prop.PropertyType.FullName, value.GetType().FullName);
+                //         continue;
+                //     }
+                // }
 
                 if (!p.prop.PropertyType.IsInstanceOfType(value))
                 {
@@ -174,7 +304,6 @@ namespace HC.TFPlugin
                 
                 p.prop.SetValue(inst, value);
             }
-
             return inst;
         }
     }
