@@ -8,7 +8,9 @@
 
   <PropertyGroup>
     <!-- https://stackoverflow.com/a/44074296/5428506 -->
-    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
+    <!-- https://docs.microsoft.com/en-us/dotnet/core/rid-catalog -->
+    <!-- <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers> -->
+    <!-- <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers> -->
 
     <!-- https://www.terraform.io/docs/configuration/providers.html#third-party-plugins -->
     <!-- terraform-provider-<NAME>_vX.Y.Z -->
