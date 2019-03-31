@@ -12,9 +12,11 @@ namespace MsgPackSharp.Converters
         public bool CanDecode(Type type)
         {
             return type.IsArray
+                || (type == typeof(IList))
+                || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>))
                 || (type.GetConstructor(Type.EmptyTypes) != null
-                    && ((Util.GetSubclassOfGenericTypeDefinition(typeof(IList<>), type) != null)
-                        || typeof(IList).IsAssignableFrom(type)));
+                    && (typeof(IList).IsAssignableFrom(type)
+                        || (Util.GetSubclassOfGenericTypeDefinition(typeof(IList<>), type) != null)));
         }
 
         public bool CanEncode(Type type)
@@ -51,20 +53,27 @@ namespace MsgPackSharp.Converters
                 var gt = Util.GetSubclassOfGenericTypeDefinition(typeof(IList<>), type);
                 if (gt != null)
                 {
+                    var instType = type;
                     var itemType = gt.GenericTypeArguments[0];
-                    var arr = Activator.CreateInstance(type);
-                    var mth = type.GetMethod(nameof(IList<object>.Add), new[] { itemType });
+                    // If the target type is interface of IList<>, then
+                    // we construct a concrete instance type of List<>
+                    if (instType.GetGenericTypeDefinition() == typeof(IList<>))
+                        instType = typeof(List<>).MakeGenericType(itemType);
+                    var inst = Activator.CreateInstance(instType);
+                    var meth = instType.GetMethod(nameof(IList<object>.Add), new[] { itemType });
                     foreach (var mpoItem in mpoArray)
                     {
                         var item = ctx.Decode(itemType, mpoItem);
-                        mth.Invoke(arr, new[] { item });
+                        meth.Invoke(inst, new[] { item });
                     }
-                    return arr;
+                    return inst;
                 }
 
                 if (typeof(IList).IsAssignableFrom(type))
                 {
-                    var arr = (IList)Activator.CreateInstance(type);
+                    var arr = type == typeof(IList)
+                        ? new ArrayList(mpoArray.Count)
+                        : (IList)Activator.CreateInstance(type);
                     foreach (var mpoItem in mpoArray)
                     {
                         var item = ctx.Decode(typeof(object), mpoItem);

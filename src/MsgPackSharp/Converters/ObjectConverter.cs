@@ -37,8 +37,7 @@ namespace MsgPackSharp.Converters
             if (mpo.Type == MPType.Map)
             {
                 var map = (IDictionary<MPObject, MPObject>)mpo.Value;
-                var obj = Activator.CreateInstance(type);
-
+                var inst = Activator.CreateInstance(type);
                 var props = Resolver.ResolvePropertyNames(type);
 
                 foreach (var kv in map)
@@ -53,13 +52,14 @@ namespace MsgPackSharp.Converters
                             message: $"can't resolve property from name [{propName}]");
                     
                     var value = ctx.Decode(prop.PropertyType, kv.Value);
-                    prop.SetValue(obj, value);
+                    prop.SetValue(inst, value);
                 }
 
-                return obj;
+                return inst;
             }
 
-            throw new MPConversionException(type, mpo);
+            throw new MPConversionException(type, mpo,
+                message: $"could not decode [{mpo.Type}] as object");
         }
 
         public MPObject Encode(IConverterContext ctx, Type type, object obj)

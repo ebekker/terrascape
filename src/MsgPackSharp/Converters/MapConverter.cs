@@ -10,9 +10,11 @@ namespace MsgPackSharp.Converters
 
         public bool CanDecode(Type type)
         {
-            return type.GetConstructor(Type.EmptyTypes) != null
-                && (typeof(IDictionary).IsAssignableFrom(type)
-                    || Util.GetSubclassOfGenericTypeDefinition(typeof(IDictionary<,>), type) != null);
+            return type == typeof(IDictionary)
+                || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                || (type.GetConstructor(Type.EmptyTypes) != null
+                    && (typeof(IDictionary).IsAssignableFrom(type)
+                        || Util.GetSubclassOfGenericTypeDefinition(typeof(IDictionary<,>), type) != null));
         }
 
         public bool CanEncode(Type type)
@@ -37,22 +39,29 @@ namespace MsgPackSharp.Converters
                 var gt = Util.GetSubclassOfGenericTypeDefinition(typeof(IDictionary<,>), type);
                 if (gt != null)
                 {
+                    var instType = type;
                     var keyType = gt.GenericTypeArguments[0];
                     var valType = gt.GenericTypeArguments[1];
-                    var map = Activator.CreateInstance(type);
-                    var mth = type.GetMethod(nameof(IDictionary<object, object>.Add), new[] { keyType, valType });
+                    // If the target type is interface of IDictionary<,>, then
+                    // we construct a concrete instance type of Dictionary<,>
+                    if (instType.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                        instType = typeof(IDictionary<,>).MakeGenericType(keyType, valType);
+                    var inst = Activator.CreateInstance(instType);
+                    var meth = instType.GetMethod(nameof(IDictionary<object, object>.Add), new[] { keyType, valType });
                     foreach (var kv in mpoMap)
                     {
                         var k = ctx.Decode(keyType, kv.Key);
                         var v = ctx.Decode(valType, kv.Value);
-                        mth.Invoke(map, new[] { k, v });
+                        meth.Invoke(inst, new[] { k, v });
                     }
-                    return map;
+                    return inst;
                 }
 
                 if (typeof(IDictionary).IsAssignableFrom(type))
                 {
-                    var map = (IDictionary)Activator.CreateInstance(type);
+                    var map = type == typeof(IDictionary)
+                        ? new Hashtable(mpoMap.Count)
+                        : (IDictionary)Activator.CreateInstance(type);
                     foreach (var kv in mpoMap)
                     {
                         var k = ctx.Decode(typeof(object), kv.Key);
