@@ -3,7 +3,6 @@ using HC.TFPlugin.Attributes;
 
 namespace Terrascape.WinLocalProvider.Registry
 {
-
     [TFResource("winlo_registry_key", Version = 1L)]
     public class RegistryKeyResource
     {

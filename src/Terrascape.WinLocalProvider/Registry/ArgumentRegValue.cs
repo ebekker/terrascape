@@ -1,9 +1,14 @@
+using System.Collections.Generic;
 using HC.TFPlugin.Attributes;
 
 namespace Terrascape.WinLocalProvider.Registry
 {
     public class ArgumentRegValue
     {
+        public static readonly IEnumerable<string> AllValueArguments = new[] {
+            "value", "value_base64", "values",
+        };
+
         [TFArgument("type",
             Required = true)]
         public string Type { get; set; }

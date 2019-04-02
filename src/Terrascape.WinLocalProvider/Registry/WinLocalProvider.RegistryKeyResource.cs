@@ -25,6 +25,27 @@ namespace Terrascape.WinLocalProvider
             if (input.Config.Entries?.Count == 0)
                 result.Error("at least one entry must be specified",
                     steps: new TFSteps().Attribute("entries"));
+            else
+            {
+                foreach (var e in input.Config.Entries)
+                {
+                    var valArgs = 0;
+                    if (!string.IsNullOrEmpty(e.Value.Value))
+                        ++valArgs;
+                    if (!string.IsNullOrEmpty(e.Value.ValueBase64))
+                        ++valArgs;
+                    if (e.Value.Values?.Length > 0)
+                        ++valArgs;
+
+                    if (valArgs != 1)
+                        result.Error("entry must specify exactly one value argument"
+                            + $" (currently = {valArgs}): "
+                            + string.Join(",", ArgumentRegValue.AllValueArguments),
+                            steps: new TFSteps()
+                                .Attribute("entries")
+                                .Element(e.Key));
+                }
+            }
 
             return result;
         }
