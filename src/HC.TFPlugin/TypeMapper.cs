@@ -56,7 +56,8 @@ namespace HC.TFPlugin
                 }
                 catch (Exception ex)
                 {
-                    throw new NotSupportedException("failed to resolve map value type", ex);
+                    throw new NotSupportedException(
+                        $"failed to resolve map value type [{mapElementType.FullName}]", ex);
                 }
             }
 
