@@ -17,7 +17,7 @@ namespace Terrascape.LocalProvider
             }
             catch (Exception ex)
             {
-                _log.LogInformation(ex, "Exception caught at Program Entry");
+                _log.LogError(ex, "Exception caught at Program Entry");
                 throw;
             }
         }

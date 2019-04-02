@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Terrascape.LocalProvider;
 
 [assembly: TFPlugin(
-    typeof(Terrascape.LocalProvider.LocalProvider),
+    typeof(LocalProvider),
     DataSources = new[] {
         typeof(SystemInfoDataSource),
         typeof(FileInfoDataSource),
