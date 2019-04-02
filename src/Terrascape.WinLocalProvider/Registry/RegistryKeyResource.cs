@@ -17,10 +17,7 @@ namespace Terrascape.WinLocalProvider.Registry
             ForceNew = true)]
         public string Path { get; set; }
 
-        [TFNested("entry_for_list")]
-        public List<ArgumentRegValue> Ents { get; set; }
-
-        [TFNested("entry_for_map")]
+        [TFNested("entry")]
         public Dictionary<string, ArgumentRegValue> Entries { get; set; }
     }
 }
