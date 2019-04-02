@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -38,6 +39,11 @@ namespace HC.TFPlugin
             if (!string.IsNullOrEmpty(tfRunId))
                 _log.LogInformation($"TF Run ID: {tfRunId}");
 
+            // For debugging/troubleshooting:
+            // _log.LogInformation("ENV: " + string.Join("\n", Environment.GetEnvironmentVariables()
+            //     .Cast<System.Collections.DictionaryEntry>()
+            //     .Select(x => $"{x.Key}={x.Value}")));
+            
             var magic = System.Environment.GetEnvironmentVariable(HandshakeMagicCookieName);
             if (HandshakeMagicCookieValue != magic)
                 throw new Exception("plugin should only be invoked by host");
