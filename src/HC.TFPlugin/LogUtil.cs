@@ -59,16 +59,19 @@ namespace HC.TFPlugin
             var logPath = Path.Combine(curDir, $"{libName}-serilog.log");
 
             var outputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}";
-
-            LoggerFactory.AddSerilog(
-                new Serilog.LoggerConfiguration()
+            var loggerConfig = new Serilog.LoggerConfiguration()
                     .Enrich.FromLogContext()
                     // // .Destructure.ByTransforming<DynamicValue>(DestructureDynamicValue)
                     .MinimumLevel.Verbose()
                     .WriteTo.File(logPath
                         //,restrictedToMinimumLevel: LogEventLevel.Verbose)
-                        ,outputTemplate: outputTemplate)
-                    .CreateLogger());
+                        ,outputTemplate: outputTemplate);
+
+            // AppSettings JSON can be configured as per:
+            //  https://github.com/serilog/serilog-settings-configuration
+            loggerConfig.ReadFrom.Configuration(ConfigUtil.Configuration);
+
+            LoggerFactory.AddSerilog(loggerConfig.CreateLogger());
         }
     }
 }
