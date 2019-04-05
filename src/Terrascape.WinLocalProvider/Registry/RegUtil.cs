@@ -93,5 +93,45 @@ namespace Terrascape.WinLocalProvider.Registry
 
             return null;
         }
+
+        /// <summary>
+        /// Returns a 3-tuple containing the root reg key, the parent reg key,
+        /// and the single-segment name of the argument key.  If the parent,
+        /// of the argument key is a root key, then the parent reg key component
+        /// of the tuple will be null.
+        /// </summary>
+        public static (RegistryKey root, RegistryKey parent, string name)? OpenParentWithName(RegistryKey key, bool writable = false)
+        {
+            return OpenParentWithName(key.Name);
+        }
+
+        /// <summary>
+        /// Returns a 3-tuple containing the root reg key, the parent reg key,
+        /// and the single-segment name of the argument key.  If the parent,
+        /// of the argument key is a root key, then the parent reg key component
+        /// of the tuple will be null.
+        /// </summary>
+        public static (RegistryKey root, RegistryKey parent, string name)? OpenParentWithName(string keyFullName, bool writable = false)
+        {
+            var lastSep = keyFullName.LastIndexOf('\\');
+            if (lastSep < 0)
+                return null;
+            
+            var parentFullName = keyFullName.Substring(0, lastSep);
+            var keyName = keyFullName.Substring(lastSep + 1);
+
+            var split = parentFullName.Split('\\', 2);
+            if (split.Length < 1)
+                return null;
+
+            var root = ParseRootKey(split[0]);
+            if (root == null)
+                return null;
+            
+            if (split.Length == 1)
+                return (root, null, keyName);
+            else
+                return (root, root.OpenSubKey(split[1], writable), keyName);
+        }
     }
 }
