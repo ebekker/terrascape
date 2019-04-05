@@ -31,6 +31,8 @@ namespace HC.TFPlugin
             if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Computed<>))
                 return From(t.GetGenericArguments()[0]);
 
+
+
             if (typeof(bool) == t)
                 return TypeBool;
 
@@ -46,6 +48,20 @@ namespace HC.TFPlugin
             
             if (typeof(string) == t)
                 return TypeString;
+
+            var nullableElementType = NullableElementTypeFrom(t);
+            if (nullableElementType != null)
+            {
+                try
+                {
+                    return From(nullableElementType);
+                }
+                catch (Exception ex)
+                {
+                    throw new NotSupportedException(
+                        $"failed to resolve nullable value type [{nullableElementType.FullName}]");
+                }
+            }
 
             var mapElementType = MapElementTypeFrom(t);
             if (mapElementType != null)
@@ -75,6 +91,12 @@ namespace HC.TFPlugin
             }
 
             throw new NotSupportedException("unable to map native type to Schema type");
+        }
+
+        public static Type NullableElementTypeFrom(Type type)
+        {
+            var nullableSubclass = GetSubclassOfGenericTypeDefinition(typeof(Nullable<>), type);
+            return nullableSubclass?.GenericTypeArguments[0];                
         }
 
         public static Type MapElementTypeFrom(Type type)
