@@ -16,9 +16,9 @@ namespace Terrascape.WinLocalProvider
         {
             var result = new ValidateDataSourceConfigResult<RegistryKeyDataSource>();
 
-            if (!RegUtil.AllRoots.Contains(input.Config.Root))
+            if (!RegUtil.AllRootAliases.Contains(input.Config.Root))
                 result.Error("invalid root, must be one of:  "
-                    + string.Join(" | ", RegUtil.AllRoots),
+                    + string.Join(" | ", RegUtil.AllRootAliases),
                     steps: new TFSteps().Attribute("root"));
 
             return result;
@@ -33,7 +33,7 @@ namespace Terrascape.WinLocalProvider
             if (root == null)
             {
                     result.Error("invalid root, must be one of:  "
-                        + string.Join(" | ", RegUtil.AllRoots));
+                        + string.Join(" | ", RegUtil.AllRootAliases));
             }
             else
             {
