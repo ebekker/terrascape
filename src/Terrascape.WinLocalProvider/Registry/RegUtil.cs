@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Win32;
 using WinReg = Microsoft.Win32.Registry;
@@ -8,11 +9,14 @@ namespace Terrascape.WinLocalProvider.Registry
     {
         public static readonly string[] EmptyStrings = new string[0];
 
-        public const string LocalMachineRoot = "HKLM";
-        public const string CurrentUserRoot = "HKCU";
-        public static readonly IEnumerable<string> AllRoots = new[] {
-            LocalMachineRoot,
-            CurrentUserRoot,
+        public static readonly string LocalMachineRootName = WinReg.LocalMachine.Name;
+        public static readonly string CurrentUserRootName = WinReg.CurrentUser.Name;
+
+        public const string LocalMachineRootAlias = "HKLM";
+        public const string CurrentUserRootAlias = "HKCU";
+        public static readonly IEnumerable<string> AllRootAliases = new[] {
+            LocalMachineRootAlias,
+            CurrentUserRootAlias,
         };
 
         public static string ToString(RegistryValueKind kind)
@@ -57,15 +61,35 @@ namespace Terrascape.WinLocalProvider.Registry
             }
         }
 
+        public static object ResolveValue(ArgumentRegValue arg)
+        {
+            switch (ParseValueKind(arg.Type))
+            {
+                case RegistryValueKind.Binary:
+                    return Convert.FromBase64String(arg.ValueBase64);
+                case RegistryValueKind.DWord:
+                    return int.Parse(arg.Value);
+                case RegistryValueKind.QWord:
+                    return long.Parse(arg.Value);
+                case RegistryValueKind.MultiString:
+                    return arg.Values;
+                case RegistryValueKind.ExpandString:
+                    return string.IsNullOrEmpty(arg.Value)
+                        ? arg.Values ?? EmptyStrings
+                        : (object)arg.Value;
+                default:
+                    return arg.Value;
+            }
+        }
+
         public static RegistryKey ParseRootKey(string name)
         {
-            switch (name)
-            {
-                case LocalMachineRoot:
-                    return WinReg.LocalMachine;
-                case CurrentUserRoot:
-                    return WinReg.CurrentUser;
-            }
+            if (name == LocalMachineRootName
+                || name == LocalMachineRootAlias)
+                return WinReg.LocalMachine;
+            if (name == CurrentUserRootName
+                || name == CurrentUserRootAlias)
+                return WinReg.CurrentUser;
 
             return null;
         }
