@@ -1,0 +1,32 @@
+using System;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+namespace HashiCorp.GoPlugin.KVExample
+{
+    public class PluginMain
+    {
+        public static string ListenHost { get; set; } = "localhost";
+
+        public static int ListenPort { get; set; } = 3000;
+
+        public static async Task Main(string[] args)
+        {
+
+            var pluginHost = new PluginHost();
+
+            // KV sample client doesn't support MTLS
+            // pluginHost.PKI = PKI.SimplePKIDetails.GenerateRSA();
+
+            pluginHost.Prepare(args);
+            pluginHost.AddService<Services.KVService>();
+            await pluginHost.StartHosting();
+        }
+    }
+}
