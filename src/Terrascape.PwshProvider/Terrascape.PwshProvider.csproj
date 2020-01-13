@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <AssemblyName>terraform-provider-pwsh</AssemblyName>
+    <!-- Necessary to specific a concrete Win10 because of:
+          https://github.com/PowerShell/PowerShell/issues/7909
+          https://github.com/PowerShell/PowerShell/issues/7886
+      -->
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <Configuration>Release</Configuration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-rc.1" />
+    <PackageReference Include="Microsoft.PowerShell.Commands.Diagnostics" Version="7.0.0-rc.1" />
+    <PackageReference Include="Microsoft.WSMan.Management" Version="7.0.0-rc.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Terraform.Plugin\Terraform.Plugin.csproj" />
+  </ItemGroup>
+
+</Project>
