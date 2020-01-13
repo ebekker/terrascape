@@ -13,7 +13,7 @@ namespace HashiCorp.GoPlugin.Services
         public HealthService(ILogger<HealthService> logger)
         {
             _log = logger;
-            _log.LogInformation("HealthService constructed");
+            _log.LogDebug("Health service constructed and ready");
         }
 
         public void SetStatus(string service, HealthStatus status)
