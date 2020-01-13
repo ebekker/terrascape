@@ -333,3 +333,6 @@ ASALocalRun/
 ## The usuals
 _IGNORE
 _TMP
+
+.terraform
+terraform.tfstate*
