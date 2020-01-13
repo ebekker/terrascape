@@ -31,8 +31,6 @@ namespace HC.TFPlugin
             if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Computed<>))
                 return From(t.GetGenericArguments()[0]);
 
-
-
             if (typeof(bool) == t)
                 return TypeBool;
 
@@ -56,7 +54,7 @@ namespace HC.TFPlugin
                 {
                     return From(nullableElementType);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw new NotSupportedException(
                         $"failed to resolve nullable value type [{nullableElementType.FullName}]");

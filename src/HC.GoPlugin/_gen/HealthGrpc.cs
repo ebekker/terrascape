@@ -34,6 +34,7 @@ namespace Grpc.Health.V1 {
     }
 
     /// <summary>Base class for server-side implementations of Health</summary>
+    [grpc::BindServiceMethod(typeof(Health), "BindService")]
     public abstract partial class HealthBase
     {
       public virtual global::System.Threading.Tasks.Task<global::Grpc.Health.V1.HealthCheckResponse> Check(global::Grpc.Health.V1.HealthCheckRequest request, grpc::ServerCallContext context)

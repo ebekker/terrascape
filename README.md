@@ -118,3 +118,13 @@ resource "lo_service" "tomcat" {
 }
 
 ```
+
+## Terraform Core Docs
+
+* https://github.com/hashicorp/terraform/tree/v0.12.18/docs
+
+### Resource Instance Change Lifecycle
+
+* https://github.com/hashicorp/terraform/blob/v0.12.18/docs/resource-instance-change-lifecycle.md
+
+![](https://raw.githubusercontent.com/hashicorp/terraform/v0.12.18/docs/images/resource-instance-change-lifecycle.png)

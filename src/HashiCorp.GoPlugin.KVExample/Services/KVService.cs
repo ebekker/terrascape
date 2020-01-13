@@ -26,7 +26,6 @@ namespace HashiCorp.GoPlugin.KVExample.Services
         {
             _log.LogInformation("Got Put with [{0}]=[{1}]", request.Key,
                 request.Value.ToStringUtf8());
-            _ph.StopHosting();
             
             return Task.FromResult(DefaultEmpty);
         }
@@ -35,8 +34,10 @@ namespace HashiCorp.GoPlugin.KVExample.Services
             Grpc.Core.ServerCallContext context)
         {
             _log.LogInformation("Got Get with [{0}]", request.Key);
-            _ph.StopHosting();
             
+            // Artificial delay...
+            Thread.Sleep(15 * 1000);
+
             return Task.FromResult(new GetResponse
             {
                 Value = ByteString.CopyFromUtf8(

@@ -42,6 +42,7 @@ namespace Proto {
     }
 
     /// <summary>Base class for server-side implementations of KV</summary>
+    [grpc::BindServiceMethod(typeof(KV), "BindService")]
     public abstract partial class KVBase
     {
       public virtual global::System.Threading.Tasks.Task<global::Proto.GetResponse> Get(global::Proto.GetRequest request, grpc::ServerCallContext context)

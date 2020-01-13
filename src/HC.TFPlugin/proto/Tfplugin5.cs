@@ -545,7 +545,7 @@ namespace Tfplugin5 {
       }
       if (other.attribute_ != null) {
         if (attribute_ == null) {
-          attribute_ = new global::Tfplugin5.AttributePath();
+          Attribute = new global::Tfplugin5.AttributePath();
         }
         Attribute.MergeFrom(other.Attribute);
       }
@@ -561,7 +561,7 @@ namespace Tfplugin5 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            severity_ = (global::Tfplugin5.Diagnostic.Types.Severity) input.ReadEnum();
+            Severity = (global::Tfplugin5.Diagnostic.Types.Severity) input.ReadEnum();
             break;
           }
           case 18: {
@@ -574,9 +574,9 @@ namespace Tfplugin5 {
           }
           case 34: {
             if (attribute_ == null) {
-              attribute_ = new global::Tfplugin5.AttributePath();
+              Attribute = new global::Tfplugin5.AttributePath();
             }
-            input.ReadMessage(attribute_);
+            input.ReadMessage(Attribute);
             break;
           }
         }
@@ -1587,7 +1587,7 @@ namespace Tfplugin5 {
       }
       if (other.block_ != null) {
         if (block_ == null) {
-          block_ = new global::Tfplugin5.Schema.Types.Block();
+          Block = new global::Tfplugin5.Schema.Types.Block();
         }
         Block.MergeFrom(other.Block);
       }
@@ -1608,9 +1608,9 @@ namespace Tfplugin5 {
           }
           case 18: {
             if (block_ == null) {
-              block_ = new global::Tfplugin5.Schema.Types.Block();
+              Block = new global::Tfplugin5.Schema.Types.Block();
             }
-            input.ReadMessage(block_);
+            input.ReadMessage(Block);
             break;
           }
         }
@@ -2281,7 +2281,7 @@ namespace Tfplugin5 {
           }
           if (other.block_ != null) {
             if (block_ == null) {
-              block_ = new global::Tfplugin5.Schema.Types.Block();
+              Block = new global::Tfplugin5.Schema.Types.Block();
             }
             Block.MergeFrom(other.Block);
           }
@@ -2311,13 +2311,13 @@ namespace Tfplugin5 {
               }
               case 18: {
                 if (block_ == null) {
-                  block_ = new global::Tfplugin5.Schema.Types.Block();
+                  Block = new global::Tfplugin5.Schema.Types.Block();
                 }
-                input.ReadMessage(block_);
+                input.ReadMessage(Block);
                 break;
               }
               case 24: {
-                nesting_ = (global::Tfplugin5.Schema.Types.NestedBlock.Types.NestingMode) input.ReadEnum();
+                Nesting = (global::Tfplugin5.Schema.Types.NestedBlock.Types.NestingMode) input.ReadEnum();
                 break;
               }
               case 32: {
@@ -2710,7 +2710,7 @@ namespace Tfplugin5 {
           }
           if (other.provider_ != null) {
             if (provider_ == null) {
-              provider_ = new global::Tfplugin5.Schema();
+              Provider = new global::Tfplugin5.Schema();
             }
             Provider.MergeFrom(other.Provider);
           }
@@ -2730,9 +2730,9 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (provider_ == null) {
-                  provider_ = new global::Tfplugin5.Schema();
+                  Provider = new global::Tfplugin5.Schema();
                 }
-                input.ReadMessage(provider_);
+                input.ReadMessage(Provider);
                 break;
               }
               case 18: {
@@ -2968,7 +2968,7 @@ namespace Tfplugin5 {
           }
           if (other.config_ != null) {
             if (config_ == null) {
-              config_ = new global::Tfplugin5.DynamicValue();
+              Config = new global::Tfplugin5.DynamicValue();
             }
             Config.MergeFrom(other.Config);
           }
@@ -2985,9 +2985,9 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (config_ == null) {
-                  config_ = new global::Tfplugin5.DynamicValue();
+                  Config = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(config_);
+                input.ReadMessage(Config);
                 break;
               }
             }
@@ -3118,7 +3118,7 @@ namespace Tfplugin5 {
           }
           if (other.preparedConfig_ != null) {
             if (preparedConfig_ == null) {
-              preparedConfig_ = new global::Tfplugin5.DynamicValue();
+              PreparedConfig = new global::Tfplugin5.DynamicValue();
             }
             PreparedConfig.MergeFrom(other.PreparedConfig);
           }
@@ -3136,9 +3136,9 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (preparedConfig_ == null) {
-                  preparedConfig_ = new global::Tfplugin5.DynamicValue();
+                  PreparedConfig = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(preparedConfig_);
+                input.ReadMessage(PreparedConfig);
                 break;
               }
               case 18: {
@@ -3424,7 +3424,7 @@ namespace Tfplugin5 {
           }
           if (other.rawState_ != null) {
             if (rawState_ == null) {
-              rawState_ = new global::Tfplugin5.RawState();
+              RawState = new global::Tfplugin5.RawState();
             }
             RawState.MergeFrom(other.RawState);
           }
@@ -3449,9 +3449,9 @@ namespace Tfplugin5 {
               }
               case 26: {
                 if (rawState_ == null) {
-                  rawState_ = new global::Tfplugin5.RawState();
+                  RawState = new global::Tfplugin5.RawState();
                 }
-                input.ReadMessage(rawState_);
+                input.ReadMessage(RawState);
                 break;
               }
             }
@@ -3592,7 +3592,7 @@ namespace Tfplugin5 {
           }
           if (other.upgradedState_ != null) {
             if (upgradedState_ == null) {
-              upgradedState_ = new global::Tfplugin5.DynamicValue();
+              UpgradedState = new global::Tfplugin5.DynamicValue();
             }
             UpgradedState.MergeFrom(other.UpgradedState);
           }
@@ -3610,9 +3610,9 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (upgradedState_ == null) {
-                  upgradedState_ = new global::Tfplugin5.DynamicValue();
+                  UpgradedState = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(upgradedState_);
+                input.ReadMessage(UpgradedState);
                 break;
               }
               case 18: {
@@ -3864,7 +3864,7 @@ namespace Tfplugin5 {
           }
           if (other.config_ != null) {
             if (config_ == null) {
-              config_ = new global::Tfplugin5.DynamicValue();
+              Config = new global::Tfplugin5.DynamicValue();
             }
             Config.MergeFrom(other.Config);
           }
@@ -3885,9 +3885,9 @@ namespace Tfplugin5 {
               }
               case 18: {
                 if (config_ == null) {
-                  config_ = new global::Tfplugin5.DynamicValue();
+                  Config = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(config_);
+                input.ReadMessage(Config);
                 break;
               }
             }
@@ -4256,7 +4256,7 @@ namespace Tfplugin5 {
           }
           if (other.config_ != null) {
             if (config_ == null) {
-              config_ = new global::Tfplugin5.DynamicValue();
+              Config = new global::Tfplugin5.DynamicValue();
             }
             Config.MergeFrom(other.Config);
           }
@@ -4277,9 +4277,9 @@ namespace Tfplugin5 {
               }
               case 18: {
                 if (config_ == null) {
-                  config_ = new global::Tfplugin5.DynamicValue();
+                  Config = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(config_);
+                input.ReadMessage(Config);
                 break;
               }
             }
@@ -4648,7 +4648,7 @@ namespace Tfplugin5 {
           }
           if (other.config_ != null) {
             if (config_ == null) {
-              config_ = new global::Tfplugin5.DynamicValue();
+              Config = new global::Tfplugin5.DynamicValue();
             }
             Config.MergeFrom(other.Config);
           }
@@ -4669,9 +4669,9 @@ namespace Tfplugin5 {
               }
               case 18: {
                 if (config_ == null) {
-                  config_ = new global::Tfplugin5.DynamicValue();
+                  Config = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(config_);
+                input.ReadMessage(Config);
                 break;
               }
             }
@@ -5040,7 +5040,7 @@ namespace Tfplugin5 {
           }
           if (other.currentState_ != null) {
             if (currentState_ == null) {
-              currentState_ = new global::Tfplugin5.DynamicValue();
+              CurrentState = new global::Tfplugin5.DynamicValue();
             }
             CurrentState.MergeFrom(other.CurrentState);
           }
@@ -5061,9 +5061,9 @@ namespace Tfplugin5 {
               }
               case 18: {
                 if (currentState_ == null) {
-                  currentState_ = new global::Tfplugin5.DynamicValue();
+                  CurrentState = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(currentState_);
+                input.ReadMessage(CurrentState);
                 break;
               }
             }
@@ -5194,7 +5194,7 @@ namespace Tfplugin5 {
           }
           if (other.newState_ != null) {
             if (newState_ == null) {
-              newState_ = new global::Tfplugin5.DynamicValue();
+              NewState = new global::Tfplugin5.DynamicValue();
             }
             NewState.MergeFrom(other.NewState);
           }
@@ -5212,9 +5212,9 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (newState_ == null) {
-                  newState_ = new global::Tfplugin5.DynamicValue();
+                  NewState = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(newState_);
+                input.ReadMessage(NewState);
                 break;
               }
               case 18: {
@@ -5529,19 +5529,19 @@ namespace Tfplugin5 {
           }
           if (other.priorState_ != null) {
             if (priorState_ == null) {
-              priorState_ = new global::Tfplugin5.DynamicValue();
+              PriorState = new global::Tfplugin5.DynamicValue();
             }
             PriorState.MergeFrom(other.PriorState);
           }
           if (other.proposedNewState_ != null) {
             if (proposedNewState_ == null) {
-              proposedNewState_ = new global::Tfplugin5.DynamicValue();
+              ProposedNewState = new global::Tfplugin5.DynamicValue();
             }
             ProposedNewState.MergeFrom(other.ProposedNewState);
           }
           if (other.config_ != null) {
             if (config_ == null) {
-              config_ = new global::Tfplugin5.DynamicValue();
+              Config = new global::Tfplugin5.DynamicValue();
             }
             Config.MergeFrom(other.Config);
           }
@@ -5565,23 +5565,23 @@ namespace Tfplugin5 {
               }
               case 18: {
                 if (priorState_ == null) {
-                  priorState_ = new global::Tfplugin5.DynamicValue();
+                  PriorState = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(priorState_);
+                input.ReadMessage(PriorState);
                 break;
               }
               case 26: {
                 if (proposedNewState_ == null) {
-                  proposedNewState_ = new global::Tfplugin5.DynamicValue();
+                  ProposedNewState = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(proposedNewState_);
+                input.ReadMessage(ProposedNewState);
                 break;
               }
               case 34: {
                 if (config_ == null) {
-                  config_ = new global::Tfplugin5.DynamicValue();
+                  Config = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(config_);
+                input.ReadMessage(Config);
                 break;
               }
               case 42: {
@@ -5786,7 +5786,7 @@ namespace Tfplugin5 {
           }
           if (other.plannedState_ != null) {
             if (plannedState_ == null) {
-              plannedState_ = new global::Tfplugin5.DynamicValue();
+              PlannedState = new global::Tfplugin5.DynamicValue();
             }
             PlannedState.MergeFrom(other.PlannedState);
           }
@@ -5811,9 +5811,9 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (plannedState_ == null) {
-                  plannedState_ = new global::Tfplugin5.DynamicValue();
+                  PlannedState = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(plannedState_);
+                input.ReadMessage(PlannedState);
                 break;
               }
               case 18: {
@@ -6140,19 +6140,19 @@ namespace Tfplugin5 {
           }
           if (other.priorState_ != null) {
             if (priorState_ == null) {
-              priorState_ = new global::Tfplugin5.DynamicValue();
+              PriorState = new global::Tfplugin5.DynamicValue();
             }
             PriorState.MergeFrom(other.PriorState);
           }
           if (other.plannedState_ != null) {
             if (plannedState_ == null) {
-              plannedState_ = new global::Tfplugin5.DynamicValue();
+              PlannedState = new global::Tfplugin5.DynamicValue();
             }
             PlannedState.MergeFrom(other.PlannedState);
           }
           if (other.config_ != null) {
             if (config_ == null) {
-              config_ = new global::Tfplugin5.DynamicValue();
+              Config = new global::Tfplugin5.DynamicValue();
             }
             Config.MergeFrom(other.Config);
           }
@@ -6176,23 +6176,23 @@ namespace Tfplugin5 {
               }
               case 18: {
                 if (priorState_ == null) {
-                  priorState_ = new global::Tfplugin5.DynamicValue();
+                  PriorState = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(priorState_);
+                input.ReadMessage(PriorState);
                 break;
               }
               case 26: {
                 if (plannedState_ == null) {
-                  plannedState_ = new global::Tfplugin5.DynamicValue();
+                  PlannedState = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(plannedState_);
+                input.ReadMessage(PlannedState);
                 break;
               }
               case 34: {
                 if (config_ == null) {
-                  config_ = new global::Tfplugin5.DynamicValue();
+                  Config = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(config_);
+                input.ReadMessage(Config);
                 break;
               }
               case 42: {
@@ -6382,7 +6382,7 @@ namespace Tfplugin5 {
           }
           if (other.newState_ != null) {
             if (newState_ == null) {
-              newState_ = new global::Tfplugin5.DynamicValue();
+              NewState = new global::Tfplugin5.DynamicValue();
             }
             NewState.MergeFrom(other.NewState);
           }
@@ -6406,9 +6406,9 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (newState_ == null) {
-                  newState_ = new global::Tfplugin5.DynamicValue();
+                  NewState = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(newState_);
+                input.ReadMessage(NewState);
                 break;
               }
               case 18: {
@@ -6846,7 +6846,7 @@ namespace Tfplugin5 {
           }
           if (other.state_ != null) {
             if (state_ == null) {
-              state_ = new global::Tfplugin5.DynamicValue();
+              State = new global::Tfplugin5.DynamicValue();
             }
             State.MergeFrom(other.State);
           }
@@ -6870,9 +6870,9 @@ namespace Tfplugin5 {
               }
               case 18: {
                 if (state_ == null) {
-                  state_ = new global::Tfplugin5.DynamicValue();
+                  State = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(state_);
+                input.ReadMessage(State);
                 break;
               }
               case 26: {
@@ -7265,7 +7265,7 @@ namespace Tfplugin5 {
           }
           if (other.config_ != null) {
             if (config_ == null) {
-              config_ = new global::Tfplugin5.DynamicValue();
+              Config = new global::Tfplugin5.DynamicValue();
             }
             Config.MergeFrom(other.Config);
           }
@@ -7286,9 +7286,9 @@ namespace Tfplugin5 {
               }
               case 18: {
                 if (config_ == null) {
-                  config_ = new global::Tfplugin5.DynamicValue();
+                  Config = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(config_);
+                input.ReadMessage(Config);
                 break;
               }
             }
@@ -7419,7 +7419,7 @@ namespace Tfplugin5 {
           }
           if (other.state_ != null) {
             if (state_ == null) {
-              state_ = new global::Tfplugin5.DynamicValue();
+              State = new global::Tfplugin5.DynamicValue();
             }
             State.MergeFrom(other.State);
           }
@@ -7437,9 +7437,9 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (state_ == null) {
-                  state_ = new global::Tfplugin5.DynamicValue();
+                  State = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(state_);
+                input.ReadMessage(State);
                 break;
               }
               case 18: {
@@ -7783,7 +7783,7 @@ namespace Tfplugin5 {
           }
           if (other.provisioner_ != null) {
             if (provisioner_ == null) {
-              provisioner_ = new global::Tfplugin5.Schema();
+              Provisioner = new global::Tfplugin5.Schema();
             }
             Provisioner.MergeFrom(other.Provisioner);
           }
@@ -7801,9 +7801,9 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (provisioner_ == null) {
-                  provisioner_ = new global::Tfplugin5.Schema();
+                  Provisioner = new global::Tfplugin5.Schema();
                 }
-                input.ReadMessage(provisioner_);
+                input.ReadMessage(Provisioner);
                 break;
               }
               case 18: {
@@ -8031,7 +8031,7 @@ namespace Tfplugin5 {
           }
           if (other.config_ != null) {
             if (config_ == null) {
-              config_ = new global::Tfplugin5.DynamicValue();
+              Config = new global::Tfplugin5.DynamicValue();
             }
             Config.MergeFrom(other.Config);
           }
@@ -8048,9 +8048,9 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (config_ == null) {
-                  config_ = new global::Tfplugin5.DynamicValue();
+                  Config = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(config_);
+                input.ReadMessage(Config);
                 break;
               }
             }
@@ -8416,13 +8416,13 @@ namespace Tfplugin5 {
           }
           if (other.config_ != null) {
             if (config_ == null) {
-              config_ = new global::Tfplugin5.DynamicValue();
+              Config = new global::Tfplugin5.DynamicValue();
             }
             Config.MergeFrom(other.Config);
           }
           if (other.connection_ != null) {
             if (connection_ == null) {
-              connection_ = new global::Tfplugin5.DynamicValue();
+              Connection = new global::Tfplugin5.DynamicValue();
             }
             Connection.MergeFrom(other.Connection);
           }
@@ -8439,16 +8439,16 @@ namespace Tfplugin5 {
                 break;
               case 10: {
                 if (config_ == null) {
-                  config_ = new global::Tfplugin5.DynamicValue();
+                  Config = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(config_);
+                input.ReadMessage(Config);
                 break;
               }
               case 18: {
                 if (connection_ == null) {
-                  connection_ = new global::Tfplugin5.DynamicValue();
+                  Connection = new global::Tfplugin5.DynamicValue();
                 }
-                input.ReadMessage(connection_);
+                input.ReadMessage(Connection);
                 break;
               }
             }

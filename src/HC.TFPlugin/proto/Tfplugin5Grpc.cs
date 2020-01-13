@@ -150,6 +150,7 @@ namespace Tfplugin5 {
     }
 
     /// <summary>Base class for server-side implementations of Provider</summary>
+    [grpc::BindServiceMethod(typeof(Provider), "BindService")]
     public abstract partial class ProviderBase
     {
       /// <summary>
@@ -660,6 +661,7 @@ namespace Tfplugin5 {
     }
 
     /// <summary>Base class for server-side implementations of Provisioner</summary>
+    [grpc::BindServiceMethod(typeof(Provisioner), "BindService")]
     public abstract partial class ProvisionerBase
     {
       public virtual global::System.Threading.Tasks.Task<global::Tfplugin5.GetProvisionerSchema.Types.Response> GetSchema(global::Tfplugin5.GetProvisionerSchema.Types.Request request, grpc::ServerCallContext context)

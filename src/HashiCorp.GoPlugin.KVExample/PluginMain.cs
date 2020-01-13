@@ -18,15 +18,36 @@ namespace HashiCorp.GoPlugin.KVExample
 
         public static async Task Main(string[] args)
         {
-
             var pluginHost = new PluginHost();
 
             // KV sample client doesn't support MTLS
             // pluginHost.PKI = PKI.SimplePKIDetails.GenerateRSA();
 
-            pluginHost.Prepare(args);
-            pluginHost.AddService<Services.KVService>();
-            await pluginHost.StartHosting();
+            pluginHost.PrepareHost(args);
+            pluginHost.BuildHostApp();
+            pluginHost.MapGrpcService<Services.KVService>();
+            var log = pluginHost.Services.GetRequiredService<ILogger<PluginMain>>();
+            log.LogInformation("Starting up Plugin Host...");
+            var hostingTask = pluginHost.StartHosting();
+
+            log.LogInformation("Capturing console cancel request");
+            Console.CancelKeyPress += (o, e) => {
+                log.LogInformation("Got CANCEL request");
+                pluginHost.StopHosting();
+                log.LogInformation("Initiated Plugin Stop");
+            };
+
+            Console.WriteLine("Running...");
+            Console.WriteLine("Hit CTRL+C to exit.");
+
+            _ = Task.Run(async () => {
+                await Task.Delay(20 * 1000);
+                log.LogInformation("Timedout hosting");
+                pluginHost.StopHosting();
+                log.LogInformation("Initiated Plugin Stop");
+            });
+
+            await hostingTask;
         }
     }
 }
