@@ -1,0 +1,5 @@
+This is content from inline TF config.
+ * appending my public IP:
+{"ip":"173.69.158.190"}
+ * appending from another file:
+This is the first source file.

@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>LATEST</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- https://github.com/grpc/grpc/blob/master/src/csharp/BUILD-INTEGRATION.md#i-just-want-to-generate-proto-and-grpc-c-sources-from-my-proto-files-no-c-compile -->
+    <Protobuf Include="../proto/*.proto" OutputDir="./Proto" CompileOutputs="false" />
+    <Protobuf Include="**/*.proto" OutputDir="./Proto" CompileOutputs="false" />
+  </ItemGroup>
+  <PropertyGroup>
+    <!-- https://github.com/grpc/grpc/blob/master/src/csharp/BUILD-INTEGRATION.md#i-am-getting-a-warning-about-a-missing-expected-file -->
+    <Protobuf_NoWarnMissingExpected>true</Protobuf_NoWarnMissingExpected>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- These are temporary till we start generating internally -->
+    <!-- <Content CopyToOutputDirectory="PreserveNewest" Include="_cert/ca.crt" />
+    <Content CopyToOutputDirectory="PreserveNewest" Include="_cert/server.key" />
+    <Content CopyToOutputDirectory="PreserveNewest" Include="_cert/server.crt" /> -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.6.1" />
+    <PackageReference Include="Grpc" Version="1.*" />
+    <PackageReference Include="Grpc.Tools" Version="1.*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.4.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
+    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
+
+    <PackageReference Include="MessagePack" Version="1.7.3.4" />
+    <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HC.GoPlugin\HC.GoPlugin.csproj" />
+    <ProjectReference Include="..\MsgPackSharp\MsgPackSharp.csproj" />
+  </ItemGroup>
+
+</Project>
