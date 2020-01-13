@@ -8,7 +8,13 @@ namespace MsgPackSharp
 {
     public class MPWriter
     {
+        public static readonly byte[] NoBytes = new byte[0];
+
         private Stream _stream;
+
+        // This is a reusable byte buffer used by various methods instead of
+        // reallocating a new buffer of various small sized over and over
+        // NOTE:  clearly this type is *NOT* reentrant-safe
         private byte[] _bytes = new byte[16];
 
         public MPWriter(Stream stream)
@@ -22,12 +28,12 @@ namespace MsgPackSharp
             switch (mpo.Type)
             {
                 case MPType.Nil:
-                    _bytes[0] = Formats.Nil;
+                    _bytes[0] = MPFormats.Nil;
                     _stream.Write(_bytes, 0, 1);
                     return 1;
 
                 case MPType.Boolean:
-                    _bytes[0] = (byte)(((bool)mpo.Value) ? Formats.True : Formats.False);
+                    _bytes[0] = (byte)(((bool)mpo.Value) ? MPFormats.True : MPFormats.False);
                     _stream.Write(_bytes, 0, 1);
                     return 1;
 
@@ -61,39 +67,47 @@ namespace MsgPackSharp
             var ext = (MPExt)mpo.Value;
             var extDataLen = ext.Data.Length;
             byte fmt;
-            var nb = new byte[0];
+            byte[] nb;
 
             if (extDataLen < byte.MaxValue)
             {
+                nb = NoBytes;
                 switch (extDataLen)
                 {
-                    case 1: fmt = Formats.FixExt1; break;
-                    case 2: fmt = Formats.FixExt2; break;
-                    case 4: fmt = Formats.FixExt4; break;
-                    case 8: fmt = Formats.FixExt8; break;
-                    case 16: fmt = Formats.FixExt16; break;
+                    // Handle the special cases for specific data lengths...
+                    case 1: fmt = MPFormats.FixExt1; break;
+                    case 2: fmt = MPFormats.FixExt2; break;
+                    case 4: fmt = MPFormats.FixExt4; break;
+                    case 8: fmt = MPFormats.FixExt8; break;
+                    case 16: fmt = MPFormats.FixExt16; break;
+
+                    // ...then default to the general var-length case
                     default:
-                        fmt = Formats.Ext8;
+                        fmt = MPFormats.Ext8;
                         nb = new[] { unchecked((byte)extDataLen) };
                         break;
                 }
             }
             else if (extDataLen < ushort.MaxValue)
             {
-                fmt = Formats.Ext16;
+                fmt = MPFormats.Ext16;
                 nb = BitConverter.GetBytes((ushort)extDataLen);
             }
             // This should be uint.MaxValue but Span<> can't store that
             // many elements or at least can't give us a count that high
             else if (extDataLen < int.MaxValue)
             {
-                fmt = Formats.Ext32;
+                fmt = MPFormats.Ext32;
                 nb = BitConverter.GetBytes((uint)extDataLen);
             }
             else
             {
                 throw new Exception("Can't emit byte stream for MPO type: " + mpo.Type);
             }
+
+            // Ensure network byte order
+            if (extDataLen >= byte.MaxValue && BitConverter.IsLittleEndian)
+                System.Array.Reverse(nb);
 
             _stream.WriteByte(fmt);
             _stream.Write(nb, 0, nb.Length);
@@ -108,21 +122,23 @@ namespace MsgPackSharp
             var map = (IDictionary<MPObject, MPObject>)mpo.Value;
             var mapCount = map.Count;
             byte fmt;
-            var nb = new byte[0];
+            byte[] nb;
+
             if (mapCount <= 15)
             {
-                fmt = unchecked((byte)(mapCount + Formats.FixMap.start));
+                fmt = unchecked((byte)(mapCount + MPFormats.FixMap.start));
+                nb = NoBytes;
             }
             else if (mapCount < ushort.MaxValue)
             {
-                fmt = Formats.Map16;
+                fmt = MPFormats.Map16;
                 nb = BitConverter.GetBytes((ushort)mapCount);
             }
             // This should be uint.MaxValue but Dictionary can't store that
             // many elements or at least can't give us a count that high
             else if (mapCount < int.MaxValue)
             {
-                fmt = Formats.Map32;
+                fmt = MPFormats.Map32;
                 nb = BitConverter.GetBytes((uint)mapCount);
             }
             else
@@ -130,6 +146,9 @@ namespace MsgPackSharp
                 throw new Exception("Can't emit byte stream for MPO type: " + mpo.Type);
             }
 
+            // Ensure network byte order
+            if (mapCount > 16 && BitConverter.IsLittleEndian)
+                System.Array.Reverse(nb);
 
             _stream.WriteByte(fmt);
             _stream.Write(nb, 0, nb.Length);
@@ -147,21 +166,23 @@ namespace MsgPackSharp
             var arr = (IList<MPObject>)mpo.Value;
             var arrCount = arr.Count;
             byte fmt;
-            var nb = new byte[0];
+            byte[] nb;
+
             if (arrCount <= 15)
             {
-                fmt = unchecked((byte)(arrCount + Formats.FixArray.start));
+                fmt = unchecked((byte)(arrCount + MPFormats.FixArray.start));
+                nb = NoBytes;
             }
             else if (arrCount < ushort.MaxValue)
             {
-                fmt = Formats.Array16;
+                fmt = MPFormats.Array16;
                 nb = BitConverter.GetBytes((ushort)arrCount);
             }
             // This should be uint.MaxValue but List can't store that
             // many elements or at least can't give us a count that high
             else if (arrCount < int.MaxValue)
             {
-                fmt = Formats.Array32;
+                fmt = MPFormats.Array32;
                 nb = BitConverter.GetBytes((uint)arrCount);
             }
             else
@@ -169,6 +190,9 @@ namespace MsgPackSharp
                 throw new Exception("Can't emit byte stream for MPO type: " + mpo.Type);
             }
 
+            // Ensure network byte order
+            if (arrCount > 16 && BitConverter.IsLittleEndian)
+                System.Array.Reverse(nb);
 
             _stream.WriteByte(fmt);
             _stream.Write(nb, 0, nb.Length);
@@ -186,25 +210,31 @@ namespace MsgPackSharp
             var b = Encoding.UTF8.GetBytes(s);
             byte fmt;
             byte[] nb;
+
             if (b.Length <= byte.MaxValue)
             {
-                fmt = Formats.Str8;
+                fmt = MPFormats.Str8;
                 nb = new byte[] { unchecked((byte)b.Length) };
             }
             else if (b.Length <= ushort.MaxValue)
             {
-                fmt = Formats.Str16;
+                fmt = MPFormats.Str16;
                 nb = BitConverter.GetBytes((ushort)b.Length);
+                    
             }
             else if (b.LongLength <= uint.MaxValue)
             {
-                fmt = Formats.Str32;
+                fmt = MPFormats.Str32;
                 nb = BitConverter.GetBytes((uint)b.Length);
             }
             else
             {
                 throw new Exception("Can't emit byte stream for MPO type: " + mpo.Type);
             }
+
+            // Ensure network byte order
+            if (b.Length > byte.MaxValue && BitConverter.IsLittleEndian)
+                System.Array.Reverse(nb);
 
             _stream.WriteByte(fmt);
             _stream.Write(nb, 0, nb.Length);
@@ -218,25 +248,30 @@ namespace MsgPackSharp
             var b = (byte[])mpo.Value;
             byte fmt;
             byte[] nb;
+
             if (b.Length <= byte.MaxValue)
             {
-                fmt = Formats.Bin8;
+                fmt = MPFormats.Bin8;
                 nb = new byte[] { unchecked((byte)b.Length) };
             }
             else if (b.Length <= ushort.MaxValue)
             {
-                fmt = Formats.Bin16;
+                fmt = MPFormats.Bin16;
                 nb = BitConverter.GetBytes((ushort)b.Length);
             }
             else if (b.LongLength <= uint.MaxValue)
             {
-                fmt = Formats.Bin32;
+                fmt = MPFormats.Bin32;
                 nb = BitConverter.GetBytes((uint)b.Length);
             }
             else
             {
                 throw new Exception("Can't emit byte stream for MPO type: " + mpo.Type);
             }
+
+            // Ensure network byte order
+            if (b.Length > byte.MaxValue && BitConverter.IsLittleEndian)
+                System.Array.Reverse(nb);
 
             _stream.WriteByte(fmt);
             _stream.Write(nb, 0, nb.Length);
@@ -251,13 +286,13 @@ namespace MsgPackSharp
             {
                 case float f:
                     var fb = BitConverter.GetBytes(f);
-                    _stream.WriteByte(Formats.Float32);
+                    _stream.WriteByte(MPFormats.Float32);
                     _stream.Write(fb, 0, fb.Length);
                     return 1 + fb.Length;
 
                 case double d:
                     var db = BitConverter.GetBytes(d);
-                    _stream.WriteByte(Formats.Float64);
+                    _stream.WriteByte(MPFormats.Float64);
                     _stream.Write(db, 0, db.Length);
                     return 1 + db.Length;
             }
@@ -269,38 +304,39 @@ namespace MsgPackSharp
         {
             byte fmt;
             byte[] nb;
+
             switch (mpo.Value)
             {
                 case sbyte n:
-                    fmt = Formats.Int8;
+                    fmt = MPFormats.Int8;
                     nb = new[] { unchecked((byte)n) };
                     break;
                 case byte n:
-                    fmt = Formats.UInt8;
+                    fmt = MPFormats.UInt8;
                     nb = new[] { n };
                     break;
                 case short n:
-                    fmt = Formats.Int16;
+                    fmt = MPFormats.Int16;
                     nb = BitConverter.GetBytes(n);
                     break;
                 case ushort n:
-                    fmt = Formats.UInt16;
+                    fmt = MPFormats.UInt16;
                     nb = BitConverter.GetBytes(n);
                     break;
                 case int n:
-                    fmt = Formats.Int32;
+                    fmt = MPFormats.Int32;
                     nb = BitConverter.GetBytes(n);
                     break;
                 case uint n:
-                    fmt = Formats.UInt32;
+                    fmt = MPFormats.UInt32;
                     nb = BitConverter.GetBytes(n);
                     break;
                 case long n:
-                    fmt = Formats.Int64;
+                    fmt = MPFormats.Int64;
                     nb = BitConverter.GetBytes(n);
                     break;
                 case ulong n:
-                    fmt = Formats.UInt64;
+                    fmt = MPFormats.UInt64;
                     nb = BitConverter.GetBytes(n);
                     break;
 

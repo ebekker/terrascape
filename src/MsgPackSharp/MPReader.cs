@@ -133,6 +133,8 @@ namespace MsgPackSharp
 
     public class MPReader
     {
+        private static readonly ILog _log = Logging.GetLog<MPReader>();
+
         public static MPObject? Parse(Stream stream)
         {
             var b = stream.ReadByte();
@@ -140,27 +142,27 @@ namespace MsgPackSharp
                 // EOF
                 return null;
             
-            if (b.In(Formats.PositiveFixInt))
-                return new MPObject(MPType.Integer, b - Formats.PositiveFixInt.start);
+            if (b.In(MPFormats.PositiveFixInt))
+                return new MPObject(MPType.Integer, b - MPFormats.PositiveFixInt.start);
 
-            if (b.In(Formats.NegativeFixInt))
+            if (b.In(MPFormats.NegativeFixInt))
                 return new MPObject(MPType.Integer, unchecked((long)(b)));
             
-            if (b.In(Formats.FixStr))
-                return new MPObject(MPType.String, Str(stream, b - Formats.FixStr.start));
+            if (b.In(MPFormats.FixStr))
+                return new MPObject(MPType.String, Str(stream, b - MPFormats.FixStr.start));
 
-            if (b.In(Formats.FixMap))
+            if (b.In(MPFormats.FixMap))
             {
-                var map = Map(stream, b - Formats.FixMap.start);
+                var map = Map(stream, b - MPFormats.FixMap.start);
                 if (map == null)
                     // Premature EOF
                     return null;
                 return new MPObject(MPType.Map, map);
             }
 
-            if (b.In(Formats.FixArray))
+            if (b.In(MPFormats.FixArray))
             {
-                var arr = Array(stream, b - Formats.FixArray.start);
+                var arr = Array(stream, b - MPFormats.FixArray.start);
                 if (arr == null)
                     // Premature EOF
                     return null;
@@ -169,79 +171,85 @@ namespace MsgPackSharp
 
             switch (b)
             {
-                case Formats._NeverUsed_:
+                case MPFormats._NeverUsed_:
                     throw new InvalidDataException("NeverUsed format encountered");
-                case Formats.Nil:
+
+                case MPFormats.Nil:
                     return MPObject.Nil;
 
-                case Formats.False:
+                case MPFormats.False:
                     return MPObject.False;
-                case Formats.True:
+                case MPFormats.True:
                     return MPObject.True;
 
-                case Formats.Bin8:
+                case MPFormats.Bin8:
                     return new MPObject(MPType.Binary, Bin(stream, (int)UInt(stream, 1)));
-                case Formats.Bin16:
+                case MPFormats.Bin16:
                     return new MPObject(MPType.Binary, Bin(stream, (int)UInt(stream, 2)));
-                case Formats.Bin32:
+                case MPFormats.Bin32:
                     return new MPObject(MPType.Binary, Bin(stream, (int)UInt(stream, 4)));
 
-                case Formats.UInt8:
+                case MPFormats.UInt8:
                     return new MPObject(MPType.Integer, UInt(stream, 1));
-                case Formats.UInt16:
+                case MPFormats.UInt16:
                     return new MPObject(MPType.Integer, UInt(stream, 2));
-                case Formats.UInt32:
+                case MPFormats.UInt32:
                     return new MPObject(MPType.Integer, UInt(stream, 4));
-                case Formats.UInt64:
+                case MPFormats.UInt64:
                     return new MPObject(MPType.Integer, UInt(stream, 8));
 
-                case Formats.Int8:
+                case MPFormats.Int8:
                     return new MPObject(MPType.Integer, Int(stream, 1));
-                case Formats.Int16:
+                case MPFormats.Int16:
                     return new MPObject(MPType.Integer, Int(stream, 2));
-                case Formats.Int32:
+                case MPFormats.Int32:
                     return new MPObject(MPType.Integer, Int(stream, 4));
-                case Formats.Int64:
+                case MPFormats.Int64:
                     return new MPObject(MPType.Integer, Int(stream, 8));
 
-                case Formats.Float32:
+                case MPFormats.Float32:
                     return new MPObject(MPType.Float, Float(stream, 4));
-                case Formats.Float64:
+                case MPFormats.Float64:
                     return new MPObject(MPType.Float, Float(stream, 8));
 
-                case Formats.Str8:
+                case MPFormats.Str8:
                     return new MPObject(MPType.String, Str(stream, (int)UInt(stream, 1)));
-                case Formats.Str16:
+                case MPFormats.Str16:
                     return new MPObject(MPType.String, Str(stream, (int)UInt(stream, 2)));
-                case Formats.Str32:
+                case MPFormats.Str32:
                     return new MPObject(MPType.String, Str(stream, (int)UInt(stream, 4)));
 
-                case Formats.Array16:
+                case MPFormats.Array16:
                     return new MPObject(MPType.Array, ArrayRaw(stream, (int)UInt(stream, 2)));
-                case Formats.Array32:
+                case MPFormats.Array32:
                     return new MPObject(MPType.Array, ArrayRaw(stream, (int)UInt(stream, 4)));
 
-                case Formats.Map16:
-                    return new MPObject(MPType.Map, MapRaw(stream, (int)UInt(stream, 2)));
-                case Formats.Map32:
+                case MPFormats.Map16:
+                    //return new MPObject(MPType.Map, MapRaw(stream, (int)UInt(stream, 2)));
+                    var map = Map(stream, (int)UInt(stream, 2));
+                    if (map == null)
+                        // Premature EOF
+                        return null;
+                    return new MPObject(MPType.Map, map);
+                case MPFormats.Map32:
                     return new MPObject(MPType.Map, MapRaw(stream, (int)UInt(stream, 4)));
 
-                case Formats.FixExt1:
+                case MPFormats.FixExt1:
                     return new MPObject(MPType.Ext, Ext(stream, 1));
-                case Formats.FixExt2:
+                case MPFormats.FixExt2:
                     return new MPObject(MPType.Ext, Ext(stream, 2));
-                case Formats.FixExt4:
+                case MPFormats.FixExt4:
                     return new MPObject(MPType.Ext, Ext(stream, 4));
-                case Formats.FixExt8:
+                case MPFormats.FixExt8:
                     return new MPObject(MPType.Ext, Ext(stream, 8));
-                case Formats.FixExt16:
+                case MPFormats.FixExt16:
                     return new MPObject(MPType.Ext, Ext(stream, 16));
 
-                case Formats.Ext8:
+                case MPFormats.Ext8:
                     return new MPObject(MPType.Ext, Ext(stream, (int)UInt(stream, 1)));
-                case Formats.Ext16:
+                case MPFormats.Ext16:
                     return new MPObject(MPType.Ext, Ext(stream, (int)UInt(stream, 2)));
-                case Formats.Ext32:
+                case MPFormats.Ext32:
                     return new MPObject(MPType.Ext, Ext(stream, (int)UInt(stream, 4)));
 
             }
@@ -285,97 +293,97 @@ namespace MsgPackSharp
             if (b < 0)
                 return null;
 
-            if (b.In(Formats.PositiveFixInt))
-                return "FOO" + (b - Formats.PositiveFixInt.start);
-            if (b.In(Formats.NegativeFixInt))
+            if (b.In(MPFormats.PositiveFixInt))
+                return "FOO" + (b - MPFormats.PositiveFixInt.start);
+            if (b.In(MPFormats.NegativeFixInt))
                 return "BAR" + unchecked((sbyte)(b));
             
-            if (b.In(Formats.FixMap))
-                return MapRaw(stream, b - Formats.FixMap.start);
+            if (b.In(MPFormats.FixMap))
+                return MapRaw(stream, b - MPFormats.FixMap.start);
 
-            if (b.In(Formats.FixArray))
-                return ArrayRaw(stream, b - Formats.FixArray.start);
+            if (b.In(MPFormats.FixArray))
+                return ArrayRaw(stream, b - MPFormats.FixArray.start);
 
-            if (b.In(Formats.FixStr))
-                return Str(stream, b - Formats.FixStr.start);
+            if (b.In(MPFormats.FixStr))
+                return Str(stream, b - MPFormats.FixStr.start);
 
-            if (b == Formats.Nil)
+            if (b == MPFormats.Nil)
                 return new Nullable<bool>();
 
-            if (b == Formats._NeverUsed_)
+            if (b == MPFormats._NeverUsed_)
                 throw new InvalidDataException("NeverUsed format encountered");
 
-            if (b == Formats.False)
+            if (b == MPFormats.False)
                 return false;
 
-            if (b == Formats.True)
+            if (b == MPFormats.True)
                 return true;
 
-            if (b == Formats.Bin8)
+            if (b == MPFormats.Bin8)
                 return Bin(stream, (int)UInt(stream, 1));
             
-            if (b == Formats.Bin16)
+            if (b == MPFormats.Bin16)
                 return Bin(stream, (int)UInt(stream, 2));
             
-            if (b == Formats.Bin32)
+            if (b == MPFormats.Bin32)
                 return Bin(stream, (int)UInt(stream, 4));
 
-            if (b == Formats.UInt8)
+            if (b == MPFormats.UInt8)
                 return UInt(stream, 1);
-            if (b == Formats.UInt16)
+            if (b == MPFormats.UInt16)
                 return UInt(stream, 2);
-            if (b == Formats.UInt32)
+            if (b == MPFormats.UInt32)
                 return UInt(stream, 4);
-            if (b == Formats.UInt64)
+            if (b == MPFormats.UInt64)
                 return UInt(stream, 8);
 
-            if (b == Formats.Int8)
+            if (b == MPFormats.Int8)
                 return Int(stream, 1);
-            if (b == Formats.Int16)
+            if (b == MPFormats.Int16)
                 return Int(stream, 2);
-            if (b == Formats.Int32)
+            if (b == MPFormats.Int32)
                 return Int(stream, 4);
-            if (b == Formats.Int64)
+            if (b == MPFormats.Int64)
                 return Int(stream, 8);
 
-            if (b == Formats.Float32)
+            if (b == MPFormats.Float32)
                 return Float(stream, 4);
-            if (b == Formats.Float64)
+            if (b == MPFormats.Float64)
                 return Float(stream, 8);
 
-            if (b == Formats.Str8)
+            if (b == MPFormats.Str8)
                 return Str(stream, (int)UInt(stream, 1));
-            if (b == Formats.Str16)
+            if (b == MPFormats.Str16)
                 return Str(stream, (int)UInt(stream, 2));
-            if (b == Formats.Str32)
+            if (b == MPFormats.Str32)
                 return Str(stream, (int)UInt(stream, 4));
 
-            if (b == Formats.Array16)
+            if (b == MPFormats.Array16)
                 return ArrayRaw(stream, (int)UInt(stream, 2));
-            if (b == Formats.Array32)
+            if (b == MPFormats.Array32)
                 return ArrayRaw(stream, (int)UInt(stream, 4));
 
-            if (b == Formats.Map16)
+            if (b == MPFormats.Map16)
                 return MapRaw(stream, (int)UInt(stream, 2));
-            if (b == Formats.Map32)
+            if (b == MPFormats.Map32)
                 return MapRaw(stream, (int)UInt(stream, 4));
 
-            if (b == Formats.FixExt1)
+            if (b == MPFormats.FixExt1)
                 return Ext(stream, 1);
-            if (b == Formats.FixExt2)
+            if (b == MPFormats.FixExt2)
                 return Ext(stream, 2);
-            if (b == Formats.FixExt4)
+            if (b == MPFormats.FixExt4)
                 return Ext(stream, 4);
-            if (b == Formats.FixExt8)
+            if (b == MPFormats.FixExt8)
                 return Ext(stream, 8);
-            if (b == Formats.FixExt16)
+            if (b == MPFormats.FixExt16)
                 return Ext(stream, 16);
 
-            if (b == Formats.Ext8)
+            if (b == MPFormats.Ext8)
                 return Ext(stream, (int)UInt(stream, 1));
-            if (b == Formats.Ext16)
+            if (b == MPFormats.Ext16)
                 return Ext(stream, (int)UInt(stream, 2));
-            if (b == Formats.Ext32)
+            if (b == MPFormats.Ext32)
                 return Ext(stream, (int)UInt(stream, 4));
 
             throw new InvalidDataException($"unknown format 0x{b:X}");
@@ -417,6 +425,9 @@ namespace MsgPackSharp
         {
             var b = Bin(stream, count);
 
+            if (count > 0 && BitConverter.IsLittleEndian)
+                System.Array.Reverse(b);
+
             switch (count)
             {
                 case 1:
@@ -438,6 +449,9 @@ namespace MsgPackSharp
         public static long UInt(Stream stream, int count)
         {
             var b = Bin(stream, count);
+
+            if (count > 0 && BitConverter.IsLittleEndian)
+                System.Array.Reverse(b);
 
             switch (count)
             {
@@ -490,57 +504,5 @@ namespace MsgPackSharp
             var b = Bin(stream, count);
             return new MPExt(t, b);
         }
-    }
-
-    // https://github.com/msgpack/msgpack/blob/master/spec.md#overview
-    internal static class Formats
-    {
-        public static readonly (int start, int end) PositiveFixInt = (0x00, 0x7f);
-        public static readonly (int start, int end) NegativeFixInt = (0xe0, 0xff);
-        public static readonly (int start, int end) FixMap = (0x80, 0x8f);
-        public static readonly (int start, int end) FixArray = (0x90, 0x9f);
-        public static readonly (int start, int end) FixStr = (0xa0, 0xbf);
-        public const int Nil = 0xc0;
-        public const int _NeverUsed_ = 0xc1;
-        public const int False = 0xc2;
-        public const int True = 0xc3;
-
-        public const int Bin8 = 0xc4;
-        public const int Bin16 = 0xc5;
-        public const int Bin32 = 0xc6;
-
-        public const int Ext8 = 0xc7;
-        public const int Ext16 = 0xc8;
-        public const int Ext32 = 0xc9;
-
-        public const int Float32 = 0xca;
-        public const int Float64 = 0xcb;
-        public const int UInt8 = 0xcc;
-        public const int UInt16 = 0xcd;
-        public const int UInt32 = 0xce;
-        public const int UInt64 = 0xcf;
-        public const int Int8 = 0xd0;
-        public const int Int16 = 0xd1;
-        public const int Int32 = 0xd2;
-        public const int Int64 = 0xd3;
-
-        public const int FixExt1 = 0xd4;
-        public const int FixExt2 = 0xd5;
-        public const int FixExt4 = 0xd6;
-        public const int FixExt8 = 0xd7;
-        public const int FixExt16 = 0xd8;
-        
-        public const int Str8 = 0xd9;
-        public const int Str16 = 0xda;
-        public const int Str32 = 0xdb;
-
-        public const int Array16 = 0xdc;
-        public const int Array32 = 0xdd;
-        public const int Map16 = 0xde;
-        public const int Map32 = 0xdf;
-
-        public static bool In(this int i, (int start, int end) r, bool inclusive = true) => inclusive
-            ? i >= r.start && i <= r.end
-            : i > r.start && i < r.end;
     }
 }

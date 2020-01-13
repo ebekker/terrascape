@@ -230,7 +230,7 @@ namespace MsgPackSharp.Converters
                 message: $"cannot decode into non-basic target type [{type.FullName}]");
         }
 
-        internal T Decode<T>(IConverterContext ctx, MPObject mpo, MPType mpt)
+        protected virtual T Decode<T>(IConverterContext ctx, MPObject mpo, MPType mpt)
         {
             var t = typeof(T);
             if (mpo.Type == MPType.Nil)
@@ -246,7 +246,7 @@ namespace MsgPackSharp.Converters
                 return (T)mpo.Value;
             
             throw new MPConversionException(typeof(T), mpo,
-                message: $"cannot decode MP type [{mpo.Type}] as intended MP type [{mpt}]");
+                message: $"cannot decode MP type [{mpo.Type}][{mpo.Value}] as intended MP type [{mpt}]");
         }
 
         // public static MPConverter Register(MPConverter conv)

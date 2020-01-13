@@ -31,6 +31,7 @@ namespace MsgPackSharp
             ctx.Converters.Add(BasicConverter.Instance);
             ctx.Converters.Add(CommonConverter.DefaultInstance);
             ctx.Converters.Add(MapConverter.Instance);
+            ctx.Converters.Add(ReadOnlyMapConverter.Instance);
             ctx.Converters.Add(ArrayConverter.Instance);
             ctx.Converters.Add(ObjectConverter.DefaultInstance);
             ctx.Converters.Add(DefaultConverter.Instance);
@@ -45,6 +46,7 @@ namespace MsgPackSharp
             ctx.Converters.Add(BasicConverter.Instance);
             ctx.Converters.Add(CommonConverter.DefaultInstance);
             ctx.Converters.Add(MapConverter.Instance);
+            ctx.Converters.Add(ReadOnlyMapConverter.Instance);
             ctx.Converters.Add(ArrayConverter.Instance);
 
             foreach (var c in objectConverters)
@@ -56,11 +58,13 @@ namespace MsgPackSharp
             return ctx;
         }
 
-        public MPObject Encode<T>(T obj) => Encode(typeof(T), obj);
+        // Do we need these???
 
-        public T Decode<T>(MPObject mpo) => (T)Decode(typeof(T), mpo);
+        // public MPObject Encode<T>(T obj) => Encode(typeof(T), obj);
 
-        public MPObject Encode(Type type, object obj)
+        // public T Decode<T>(MPObject mpo) => (T)Decode(typeof(T), mpo);
+
+        public virtual MPObject Encode(Type type, object obj)
         {
             foreach (var c in Converters)
             {
@@ -72,7 +76,7 @@ namespace MsgPackSharp
                 message: $"found no matching encoder for target type [{type.FullName}]");
         }
 
-        public object Decode(Type type, MPObject mpo)
+        public virtual object Decode(Type type, MPObject mpo)
         {
             foreach (var c in Converters)
             {
