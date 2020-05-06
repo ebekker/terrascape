@@ -34,21 +34,16 @@ namespace Terraform.Plugin.Util
             if (typeof(bool) == t)
                 return TypeBool;
 
-            if (typeof(int) == t)
+            if (typeof(int) == t || typeof(long) == t)
                 return TypeInt;
 
-            if (typeof(long) == t)
-                return TypeInt;
-
-            // TODO: Is there a float128?
             if (typeof(float) == t || typeof(double) == t)
                 return TypeFloat;
             
             if (typeof(string) == t)
                 return TypeString;
 
-            var nullableElementType = NullableValueElementTypeFrom(t);
-            if (nullableElementType != null)
+            if (TryGetNullableValueElementTypeFrom(t, out var nullableElementType))
             {
                 try
                 {
@@ -61,8 +56,7 @@ namespace Terraform.Plugin.Util
                 }
             }
 
-            var mapElementType = MapElementTypeFrom(t);
-            if (mapElementType != null)
+            if (TryGetMapElementTypeFrom(t, out var mapElementType))
             {
                 try
                 {
@@ -75,8 +69,7 @@ namespace Terraform.Plugin.Util
                 }
             }
 
-            var listElementType = ListElementTypeFrom(t);
-            if (listElementType != null)
+            if (TryGetListElementTypeFrom(t, out var listElementType))
             {
                 try
                 {
@@ -91,13 +84,14 @@ namespace Terraform.Plugin.Util
             throw new NotSupportedException($"unable to map native type [{t.FullName}] to Schema type");
         }
 
-        public static Type NullableValueElementTypeFrom(Type type)
+        public static bool TryGetNullableValueElementTypeFrom(Type type, out Type elementType)
         {
             var nullableSubclass = GetSubclassOfGenericTypeDefinition(typeof(Nullable<>), type);
-            return nullableSubclass?.GenericTypeArguments[0];                
+            elementType = nullableSubclass?.GenericTypeArguments[0];
+            return elementType != null;
         }
 
-        public static Type MapElementTypeFrom(Type type)
+        public static bool TryGetMapElementTypeFrom(Type type, out Type elementType)
         {
             var mapSubclass = GetSubclassOfGenericTypeDefinition(typeof(IDictionary<,>), type);
             if (mapSubclass == null)
@@ -106,13 +100,15 @@ namespace Terraform.Plugin.Util
             if (mapSubclass != null && mapSubclass.GenericTypeArguments[0] != typeof(string))
                 throw new NotSupportedException("maps can only support string keys");
 
-            return mapSubclass?.GenericTypeArguments[1];
+            elementType = mapSubclass?.GenericTypeArguments[1];
+            return elementType != null;
         }
 
-        public static Type ListElementTypeFrom(Type type)
+        public static bool TryGetListElementTypeFrom(Type type, out Type elementType)
         {
             var listSubclass = GetSubclassOfGenericTypeDefinition(typeof(IList<>), type);
-            return listSubclass?.GenericTypeArguments[0];
+            elementType = listSubclass?.GenericTypeArguments[0];
+            return elementType != null;
         }
 
         // Based on:

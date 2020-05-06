@@ -192,13 +192,13 @@ namespace Terraform.Plugin.Services
             nested.Block = new Schema.Types.Block();
 
             if (propType.IsGenericType
-                && TypeMapper.MapElementTypeFrom(propType) is Type mapElementType)
+                && TypeMapper.TryGetMapElementTypeFrom(propType, out var mapElementType))
             {
                 nested.Nesting = Schema.Types.NestedBlock.Types.NestingMode.Map;
                 AddAttrs(nested.Block, mapElementType);
             }
             else if (propType.IsGenericType
-                && TypeMapper.ListElementTypeFrom(propType) is Type listElementType)
+                && TypeMapper.TryGetListElementTypeFrom(propType, out var listElementType))
             {
                 nested.Nesting = Schema.Types.NestedBlock.Types.NestingMode.List;
                 AddAttrs(nested.Block, listElementType);

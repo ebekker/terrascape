@@ -103,6 +103,8 @@ data "pwsh_script" "dow" {
     script = <<-SCRIPT
         $context.outputs['dow_short'] = [datetime]::Now.ToString('ddd')
         $context.outputs['dow_long'] = [datetime]::Now.ToString('dddd')
+        $context.outputs['hour'] = [datetime]::Now.ToString('HH')
+        $context.outputs['min'] = [datetime]::Now.ToString('MM')
         SCRIPT
 }
 
@@ -118,6 +120,9 @@ resource "pwsh_dsc_resource" "file1" {
         Contents        = <<-CONTENTS
             This file is create by Invoke-DscResource...
             ...by way of Terraform!
+
+            Today...
+            ...the dow is: ${data.pwsh_script.dow.outputs["dow_short"]}
             CONTENTS
         Attributes      = jsonencode([
             "Archive"
@@ -134,7 +139,8 @@ resource "pwsh_dsc_resource" "file2" {
         DestinationPath = "${local.dsctest}\\_IGNORE\\SecondFile.txt"
         # Contents        = "This file is create by Invoke-DscResource"
         Contents        = <<-CONTENTS
-            Today is: ${data.pwsh_script.dow.outputs["dow_short"]}
+            Today...
+            ...the dow is: ${data.pwsh_script.dow.outputs["dow_short"]}
             This file is create by Invoke-DscResource...
             ...by way of Terraform!
             CONTENTS
@@ -155,25 +161,32 @@ resource "pwsh_dsc_resource" "file2" {
 #     }
 # }
 
-# output "dsc-file-res" {
-#     value = {
-#         props            = pwsh_dsc_resource.file1.properties
-#         results          = pwsh_dsc_resource.file1.results
-#         required_reboot  = pwsh_dsc_resource.file1.required_reboot
-#     }
-# }
+output "dsc-file-res" {
+    value = {
+        props            = pwsh_dsc_resource.file1.properties
+        results          = pwsh_dsc_resource.file1.results
+        required_reboot  = pwsh_dsc_resource.file1.required_reboot
+        all_creds        = pwsh_dsc_resource.file1.all_creds
+    }
+}
 
-# # resource "pwsh_dsc_resource" "many_files" {
-# #     module_name    = "PSDesiredStateConfiguration"
-# #     module_version = "0.0"
-# #     type_name      = "MSFT_FileDirectoryConfiguration"
+resource "pwsh_dsc_resource" "many_files" {
+    count = 3
 
-# #     properties = {
-# #         DestinationPath = "${local.dsctest}\\_IGNORE\\SecondFile.txt"
-# #         # Contents        = "This file is create by Invoke-DscResource"
-# #         Contents        = <<-CONTENTS
-# #             This file is create by Invoke-DscResource...
-# #             ...by way of Terraform!
-# #             CONTENTS
-# #     }
-# # }
+    module_name    = "PSDesiredStateConfiguration"
+    module_version = "0.0"
+    type_name      = "MSFT_FileDirectoryConfiguration"
+
+    properties = {
+        DestinationPath = "${local.dsctest}\\_IGNORE\\many-${count.index}.txt"
+        Contents        = <<-CONTENTS
+            This is file #${count.index}
+
+            This file is create by Invoke-DscResource...
+            ...by way of Terraform!
+ 
+            Today...
+            ...the dow is: ${data.pwsh_script.dow.outputs["dow_short"]}
+            CONTENTS
+    }
+}

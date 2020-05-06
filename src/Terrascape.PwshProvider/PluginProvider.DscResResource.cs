@@ -84,13 +84,15 @@ namespace Terrascape.PwshProvider
             {
                 _log.LogWarning("DELETE REQUESTED -- DSC Delete is still an unknown quantity -- WHAT DOES IT MEAN?");
             }
-            else if (input.ChangeType == TFResourceChangeType.Update
-                && !DscResTestConfig(result, input.Config))
+            else if (input.ChangeType == TFResourceChangeType.Update)
             {
-                // These may need to be recomputed
-                result.PlannedState.InDesiredState = null;
-                result.PlannedState.RequiredReboot = null;
-                result.PlannedState.Results = null;
+                if (!DscResTestConfig(result, input.Config))
+                {
+                    // These may need to be recomputed
+                    result.PlannedState.InDesiredState = null;
+                    result.PlannedState.RequiredReboot = null;
+                    result.PlannedState.Results = null;
+                }
             }
 
             return result;

@@ -106,6 +106,23 @@ output "temp1_checksum" {
     value = lo_file.temp1.checksum
 }
 
+
+resource "winlo_registry_key" "sample1" {
+    root = "HKCU" # | "HKLM"
+    path = "HKEY_CURRENT_USER\\Software\\Cygwin\\Installations"
+
+    value {
+        type = "string" # | "binary" | "dword" | "qword" | "multi-string" | "expandable-multi-string"
+        name = "foobar"
+        content = ""
+        content_base64 = ""
+        content_multi = [
+            
+        ]
+    }
+}
+
+
 # resource "acmelo_file" "temp2" {
 #     path = "${path.module}/test2.txt"
 # }

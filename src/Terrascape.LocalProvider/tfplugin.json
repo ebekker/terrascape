@@ -1,0 +1,10 @@
+{
+    "Publish": {
+        "TargetPluginsFolder": "./tf-plugins/terraform-provider-lo"
+    },
+    "Run": {
+        "PluginsFolders": [
+            "./tf-plugins/terraform-provider-lo"
+        ]
+    }
+}

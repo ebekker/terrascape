@@ -151,6 +151,16 @@ namespace Terraform.Plugin.Util
 
             public bool WithUnknowns { get; }
 
+            public override MPObject Encode(Type type, object obj)
+            {
+                var mpo = base.Encode(type, obj);
+
+                if (WithUnknowns && mpo.Type == MPType.Nil)
+                    mpo = TFSchemaObjectConverter.UnknownExtensionObject;
+
+                return mpo;
+            }
+
             public override object Decode(Type type, MPObject mpo)
             {
                 if (mpo.Type == MPType.Ext)
@@ -167,21 +177,12 @@ namespace Terraform.Plugin.Util
                     else
                     {
                         _log.LogWarning("Found unexpected EXT value: [{0}] not matching either [{1}] or [{2}]",
-                            ext, TFSchemaObjectConverter.UnknownExtension, TFSchemaObjectConverter.UnknownExtensionAlt);
+                            ext, TFSchemaObjectConverter.UnknownExtension,
+                            TFSchemaObjectConverter.UnknownExtensionAlt);
                     }
                 }
 
                 return  base.Decode(type, mpo);
-            }
-
-            public override MPObject Encode(Type type, object obj)
-            {
-                var mpo = base.Encode(type, obj);
-
-                if (WithUnknowns && mpo.Type == MPType.Nil)
-                    mpo = TFSchemaObjectConverter.UnknownExtensionObject;
-
-                return mpo;
             }
         }
 
@@ -245,32 +246,23 @@ namespace Terraform.Plugin.Util
 
                     var propName = ctx.Encode(typeof(string), name);
                     var propType = p.prop.PropertyType;
-                    var propValue = (value == null && p.attr.Computed)
-                        ? new MPObject(MPType.Ext, UnknownExtension)
-                        : ctx.Encode(propType, value);
-                    map.Add(propName, propValue);
-                }
-                return new MPObject(MPType.Map, map);
-            }
-
-            public MPObject Encode(IConverterContext ctx, Schema schema, object obj)
-            {
-                if (obj == null)
-                    return MPObject.Nil;
-                
-                var map = new Dictionary<MPObject, MPObject>();
-                var type = obj.GetType();
-                foreach (var a in schema.Block.Attributes)
-                {
-                    var prop = type.GetProperty(a.Name,
-                        BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                    var value = prop.GetValue(obj);
+                    MPObject propValue;
                     
-                    var propName = ctx.Encode(typeof(string), a.Name);
-                    var propType = prop.PropertyType;
-                    var propValue = (value == null && a.Computed)
-                        ? new MPObject(MPType.Ext, UnknownExtension)
-                        : ctx.Encode(propType, value);
+                    if (p.attr.Computed)
+                    {
+                        if (value == null)
+                        {
+                            propValue = new MPObject(MPType.Ext, UnknownExtension);
+                        }
+                        else
+                        {
+                            propValue = ctx.Encode(propType, value);
+                        }
+                    }
+                    else
+                    {
+                        propValue = WithNullsConverterContext.Encode(propType, value);
+                    }
                     map.Add(propName, propValue);
                 }
                 return new MPObject(MPType.Map, map);
@@ -331,66 +323,91 @@ namespace Terraform.Plugin.Util
                     message: $"could not decode [{mpo.Type}] as object");
             }
 
-            public T Decode<T>(IConverterContext ctx, Schema schema, MPObject mpo, T inst = null)
-                where T : class
-            {
-                if (inst == null)
-                    inst = Activator.CreateInstance<T>();
+            // DO WE STILL NEED THESE???
+
+            // public MPObject Encode(IConverterContext ctx, Schema schema, object obj)
+            // {
+            //     if (obj == null)
+            //         return MPObject.Nil;
                 
-                return (T)Decode(ctx, schema, mpo, (object)inst);
-            }
+            //     var map = new Dictionary<MPObject, MPObject>();
+            //     var type = obj.GetType();
+            //     foreach (var a in schema.Block.Attributes)
+            //     {
+            //         var prop = type.GetProperty(a.Name,
+            //             BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            //         var value = prop.GetValue(obj);
+                    
+            //         var propName = ctx.Encode(typeof(string), a.Name);
+            //         var propType = prop.PropertyType;
+            //         var propValue = (value == null && a.Computed)
+            //             ? new MPObject(MPType.Ext, UnknownExtension)
+            //             : ctx.Encode(propType, value);
+            //         map.Add(propName, propValue);
+            //     }
+            //     return new MPObject(MPType.Map, map);
+            // }
 
-            public object Decode(IConverterContext ctx, Schema schema, MPObject mpo, object inst)
-            {
-                _log.LogDebug("Decoding Schema Object");
-                if (mpo.Type == MPType.Nil)
-                    return null;
+            // public T Decode<T>(IConverterContext ctx, Schema schema, MPObject mpo, T inst = null)
+            //     where T : class
+            // {
+            //     if (inst == null)
+            //         inst = Activator.CreateInstance<T>();
+                
+            //     return (T)Decode(ctx, schema, mpo, (object)inst);
+            // }
 
-                var type = inst.GetType();
+            // public object Decode(IConverterContext ctx, Schema schema, MPObject mpo, object inst)
+            // {
+            //     _log.LogDebug("Decoding Schema Object");
+            //     if (mpo.Type == MPType.Nil)
+            //         return null;
 
-                if (mpo.Type == MPType.Map)
-                {
-                    var map = (IDictionary<MPObject, MPObject>)mpo.Value;
-                    var attrMap = schema.Block.Attributes.ToDictionary(a => a.Name, a => a);
+            //     var type = inst.GetType();
 
-                    _log.LogDebug($"decoding map of [{map.Count}] values to [{schema.Block.Attributes.Count}] properties on [{type.FullName}]");
+            //     if (mpo.Type == MPType.Map)
+            //     {
+            //         var map = (IDictionary<MPObject, MPObject>)mpo.Value;
+            //         var attrMap = schema.Block.Attributes.ToDictionary(a => a.Name, a => a);
+
+            //         _log.LogDebug($"decoding map of [{map.Count}] values to [{schema.Block.Attributes.Count}] properties on [{type.FullName}]");
 
 
-                    foreach (var kv in map)
-                    {
-                        var name = (string)ctx.Decode(typeof(string), kv.Key);
-                        if (!attrMap.TryGetValue(name, out var pa))
-                            throw new MPConversionException(type, mpo,
-                                message: $"could not resolve map key to type property [{name}]");
+            //         foreach (var kv in map)
+            //         {
+            //             var name = (string)ctx.Decode(typeof(string), kv.Key);
+            //             if (!attrMap.TryGetValue(name, out var pa))
+            //                 throw new MPConversionException(type, mpo,
+            //                     message: $"could not resolve map key to type property [{name}]");
 
-                        var prop = type.GetProperty(name,
-                            BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            //             var prop = type.GetProperty(name,
+            //                 BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
 
-                        if (kv.Value.Type == MPType.Ext)
-                        {
-                            var ext = (MPExt)kv.Value.Value;
-                            _log.LogDebug($"encountered EXT value [{ext.Type}][{ext.Data.Length}]"
-                                + $" for key [{name}] computed=[{pa.Computed}]");
-                            if (pa.Computed && (ext.Type == UnknownValExtTypeCode
-                                || ext.Type == UnknownValExtTypeCodeAlt))
-                            {
-                                _log.LogDebug("    signal for computed property, setting no value");
-                                prop.SetValue(inst, null);
-                                continue;
-                            }
-                            _log.LogWarning("unexpected EXT encountered");
-                        }
+            //             if (kv.Value.Type == MPType.Ext)
+            //             {
+            //                 var ext = (MPExt)kv.Value.Value;
+            //                 _log.LogDebug($"encountered EXT value [{ext.Type}][{ext.Data.Length}]"
+            //                     + $" for key [{name}] computed=[{pa.Computed}]");
+            //                 if (pa.Computed && (ext.Type == UnknownValExtTypeCode
+            //                     || ext.Type == UnknownValExtTypeCodeAlt))
+            //                 {
+            //                     _log.LogDebug("    signal for computed property, setting no value");
+            //                     prop.SetValue(inst, null);
+            //                     continue;
+            //                 }
+            //                 _log.LogWarning("unexpected EXT encountered");
+            //             }
 
-                        var value = ctx.Decode(prop.PropertyType, kv.Value);
-                        prop.SetValue(inst, value);
-                    }
+            //             var value = ctx.Decode(prop.PropertyType, kv.Value);
+            //             prop.SetValue(inst, value);
+            //         }
 
-                    return inst;
-                }
+            //         return inst;
+            //     }
 
-                throw new MPConversionException(type, mpo,
-                    message: $"could not decode [{mpo.Type}] as object");
-            }
+            //     throw new MPConversionException(type, mpo,
+            //         message: $"could not decode [{mpo.Type}] as object");
+            // }
         }
     }
 }
