@@ -5,21 +5,6 @@ using MsgPackSharp.Converters;
 
 namespace MsgPackSharp
 {
-    public interface IConverter
-    {
-        bool CanEncode(Type type);
-        bool CanDecode(Type type);
-
-        MPObject Encode(IConverterContext ctx, Type type, object obj);
-        object Decode(IConverterContext ctx, Type type, MPObject mpo);
-    }
-
-    public interface IConverterContext
-    {
-        MPObject Encode(Type type, object obj);
-        object Decode(Type type, MPObject mpo);
-    }
-
     public class MPConverterContext : IConverterContext
     {
         public Collection<IConverter> Converters { get; } =
