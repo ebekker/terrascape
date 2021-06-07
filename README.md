@@ -2,6 +2,8 @@
 
 On-host configuration management powered by [Terraform](https://github.com/hashicorp/terraform).
 
+:star: I appreciate your star, it helps me decide to which OSS projects I should allocate my spare time.
+
 I'm using this project as a _playground_ to experiment with a few ideas:
 
 * Implement a C#/.NET-based plugin model for TF ([done](https://github.com/ebekker/terrascape/tree/master/src/Terrascape.LocalProvider)!)
